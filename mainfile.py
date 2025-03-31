@@ -1,11 +1,37 @@
 import pygame
 
 pygame.init()
-screen = pygame.display.set_mode((1280, 720))
-clock = pygame.time.Clock()
+
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+player = pygame.image.load('LeMonke.webp')
+
 running = True
+x = 0
+clock = pygame.time.Clock()
+
+delta_time = 0.1
 
 while running:
+
+    screen.fill((0,0,0))
+
+    screen.blit(player, (x, 30))
+
+    x += 1
+
+    key = pygame.key.get_pressed()
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+    pygame.display.flip()
+
+    delta_time = clock.tick(60) / 1000
+    delta_time = max(0.001, min(0.1, delta_time))
+
+pygame.quit()
