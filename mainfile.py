@@ -12,7 +12,9 @@ SCREEN_HEIGHT = 600
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-player = pygame.image.load('LeMonke.webp')
+player = pygame.image.load('yur.webp')
+width = player.get_rect().width
+height = player.get_rect().height
 
 running = True
 x = 0
@@ -23,6 +25,8 @@ delta_time = 0.1
 while running:
 
     screen.fill((0,0,0))
+
+    player = pygame.transform.scale(player, (width/50, height/50))
 
     screen.blit(player, (x, 30))
 
