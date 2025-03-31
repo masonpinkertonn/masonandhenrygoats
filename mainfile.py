@@ -5,8 +5,14 @@ import random
 import math
 import time
 
-pygame.init()
+def thememusic():
+    pygame.mixer.init()
+    pygame.mixer.music.load('thick_of_it_by_ksi.mp3')
+    pygame.mixer.music.play(-1)
+    pygame.mixer.music.set_volume(7000)
 
+pygame.init()
+thememusic()
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
