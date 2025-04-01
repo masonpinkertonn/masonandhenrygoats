@@ -32,9 +32,9 @@ while running:
 
     screen.fill((0,0,0))
 
-    player = pygame.transform.scale(player, (width/50, height/50))
+    player = pygame.transform.scale(player, (width/20, height/20))
 
-    screen.blit(player, (x, 30))
+    screen.blit(player, (x, 250))
 
     x += 1
 
