@@ -62,7 +62,7 @@ jump_height = 20
 y_vel = jump_height
 
 movingsprites = pygame.sprite.Group()
-player = Player(10,10)
+player = Player(100,100)
 movingsprites.add(player)
 
 while running:
