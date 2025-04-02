@@ -8,18 +8,23 @@ import time
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
+        self.x = x
+        self.y = y
+        self.goingright = False
         self.sprites = []
-        self.sprites.append(pygame.image.load('tile000.png'))
-        self.sprites.append(pygame.image.load('tile001.png'))
-        self.sprites.append(pygame.image.load('tile002.png'))
-        self.sprites.append(pygame.image.load('tile003.png'))
-        self.sprites.append(pygame.image.load('tile004.png'))
-        self.sprites.append(pygame.image.load('tile005.png'))
+        names = []
+        for i in range(6):
+            names.append('tile00'+str(i)+'.png')
+        for i in names:
+            tsimage = pygame.image.load(i)
+            tsimage = pygame.transform.scale(tsimage, (200,200))
+            self.image = tsimage
+            self.sprites.append(tsimage)
         self.currentsprite = 0
         self.image = self.sprites[self.currentsprite]
 
         self.rect = self.image.get_rect()
-        self.rect.topleft = [x, y]
+        self.rect.topleft = [self.x, self.y]
     def update(self):
         self.currentsprite += 0.2
 
@@ -27,6 +32,11 @@ class Player(pygame.sprite.Sprite):
             self.currentsprite = 0
 
         self.image = self.sprites[int(self.currentsprite)]
+        if self.goingright:
+            self.image = pygame.transform.flip(self.image, True, False)
+    def changex(self, xval):
+        self.x+=xval
+        self.rect.topleft = [self.x, self.y]
 
 
 pygame.init()
@@ -35,8 +45,8 @@ SCREEN_HEIGHT = 600
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-x = 0
-y = 255
+x = 100
+y = 100
 
 """
 player = pygame.image.load('Biker_idle.png')
@@ -62,49 +72,49 @@ jump_height = 20
 y_vel = jump_height
 
 movingsprites = pygame.sprite.Group()
-player = Player(100,100)
+player = Player(x,y)
 movingsprites.add(player)
 
 while running:
 
     screen.fill((0,0,0))
 
-    """
-
-    player = pygame.transform.scale(player, (width, height))
-    playerjump = pygame.transform.scale(playerjump, (jumpwidth, jumpheight))
-    screen.blit(player, (x, y))
-
     key = pygame.key.get_pressed()
-    """
-    movingsprites.draw(screen)
-    movingsprites.update()
+    screen.blit(player.image, (player.x, player.y))
+    #movingsprites.draw(screen)
+    
+    player.update()
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
     keys = pygame.key.get_pressed()
-    """
     if keys[pygame.K_LEFT]:
+        player.goingright = True
         screen.fill((0,0,0))
-        screen.blit(pygame.transform.flip(player, True, False), (x, y))
-        x -= 1
+        player.update()
+        #player.image = pygame.transform.flip(player.image, True, False)
+        #movingsprites = pygame.sprite.Group()
+        #movingsprites.add(player)
+        screen.blit(player.image, (player.x, player.y))
+        player.changex(-2)
     elif keys[pygame.K_RIGHT]:
-        x += 1
+        player.goingright = False
+        player.changex(2)
     elif keys[pygame.K_SPACE]:
         isjumping = True
 
     if isjumping:
         screen.fill((0,0,0))
-        screen.blit(playerjump, (x, y))
-        y -= y_vel
+        player.y -= y_vel
         y_vel -= y_gravity
         if y_vel < -jump_height:
             isjumping = False
             y_vel = jump_height
-    """
+
 
     pygame.display.flip()
-    clock.tick(60)
+    clock.tick(30)
 
 pygame.quit()
