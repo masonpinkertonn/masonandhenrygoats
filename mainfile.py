@@ -166,6 +166,9 @@ while running:
             running = False
 
     keys = pygame.key.get_pressed()
+    if keys[pygame.K_SPACE]:
+        isjumping = True
+        #player.jumpdate()
     if keys[pygame.K_LEFT]:
         player.update()
         player.goingright = True
@@ -180,9 +183,6 @@ while running:
         player.update()
         player.goingright = False
         player.changex(2)
-    elif keys[pygame.K_SPACE]:
-        isjumping = True
-        #player.jumpdate()
     else:
         player.idling()
 
