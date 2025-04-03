@@ -16,6 +16,8 @@ class Player(pygame.sprite.Sprite):
         self.sprites = []
         self.jumpsprites = []
         self.currentjumpsprite = 0
+        self.idlesprites = []
+        self.currentidlesprite = 0
     def update(self):
         self.currentsprite += 0.2
 
@@ -35,11 +37,14 @@ class Player(pygame.sprite.Sprite):
         if self.goingright:
             self.image = pygame.transform.flip(self.image, True, False)
     def idling(self):
-        tsimage = pygame.image.load('Biker_idle.png')
-        tsimage = pygame.transform.scale(tsimage, (200,200))
-        player.image = tsimage
-        player.rect = player.image.get_rect()
-        player.rect.topleft = [player.x, player.y]
+        self.currentidlesprite += 0.2
+
+        if self.currentidlesprite >= len(self.idlesprites):
+            self.currentidlesprite = 0
+
+        self.image = self.idlesprites[int(self.currentidlesprite)]
+        if self.goingright:
+            self.image = pygame.transform.flip(self.image, True, False)
     def changex(self, xval):
         self.x+=xval
         self.rect.topleft = [self.x, self.y]
@@ -78,7 +83,7 @@ jumpheight *= 2
 running = True
 clock = pygame.time.Clock()
 
-isjumping = True
+isjumping = False
 
 y_gravity = 1
 jump_height = 20
@@ -120,6 +125,34 @@ player.image = player.jumpsprites[player.currentjumpsprite]
 player.rect = player.image.get_rect()
 player.rect.topleft = [player.x, player.y]
 
+jumpnames = []
+for i in range(4):
+    jumpnames.append('jump00'+str(i)+'.png')
+for i in jumpnames:
+    tsimage = pygame.image.load(i)
+    tsimage = pygame.transform.scale(tsimage, (200,200))
+    player.image = tsimage
+    player.jumpsprites.append(tsimage)
+player.currentjumpsprite = 0
+player.image = player.jumpsprites[player.currentjumpsprite]
+
+player.rect = player.image.get_rect()
+player.rect.topleft = [player.x, player.y]
+
+idlenames = []
+for i in range(4):
+    idlenames.append('idle00'+str(i)+'.png')
+for i in idlenames:
+    tsimage = pygame.image.load(i)
+    tsimage = pygame.transform.scale(tsimage, (200,200))
+    player.image = tsimage
+    player.idlesprites.append(tsimage)
+player.currentidlesprite = 0
+player.image = player.idlesprites[player.currentidlesprite]
+
+player.rect = player.image.get_rect()
+player.rect.topleft = [player.x, player.y]
+
 while running:
 
     screen.fill((0,0,0))
@@ -149,12 +182,13 @@ while running:
         player.changex(2)
     elif keys[pygame.K_SPACE]:
         isjumping = True
-        player.jumpdate()
+        #player.jumpdate()
     else:
         player.idling()
 
     if isjumping:
         #screen.fill((0,0,0))
+        player.jumpdate()
         player.y -= y_vel
         y_vel -= y_gravity
         if y_vel < -jump_height:
