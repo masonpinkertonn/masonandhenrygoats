@@ -34,6 +34,8 @@ class Player(pygame.sprite.Sprite):
         self.currenthurtsprite = 0
         self.cooldowncount = 0
         self.ispunching = False
+        self.currentdiesprite = 0
+        self.diesprites = []
     def cooldown(self):
         """
         if self.cooldowncount == 10:
@@ -71,7 +73,6 @@ class Player(pygame.sprite.Sprite):
     def punch(self):
         self.cooldown()
         if self.cooldowncount == 0:
-            print("monk")
             self.image = self.hurtsprites[int(self.currenthurtsprite)]
             if self.goingright:
                 self.image = pygame.transform.flip(self.image, True, False)
@@ -89,6 +90,16 @@ class Player(pygame.sprite.Sprite):
             isjumping = False
             y_vel = jump_height
         return isjumping
+    def die(self):
+        self.currentdiesprite += 0.1
+
+        if self.currentdiesprite >= len(self.diesprites):
+            pygame.quit()
+            self.currentdiesprite = 0
+
+        self.image = self.diesprites[int(self.currentdiesprite)]
+        if self.goingright:
+            self.image = pygame.transform.flip(self.image, True, False)
 
 
 pygame.init()
@@ -205,11 +216,27 @@ player.image = player.hurtsprites[player.currenthurtsprite]
 player.rect = player.image.get_rect()
 player.rect.topleft = [player.x, player.y]
 
+dienames = []
+for i in range(6):
+    dienames.append('die00'+str(i)+'.png')
+for i in dienames:
+    tsimage = pygame.image.load(i)
+    tsimage = pygame.transform.scale(tsimage, (200,200))
+    player.image = tsimage
+    player.diesprites.append(tsimage)
+player.currentdiesprite = 0
+player.image = player.diesprites[player.currentdiesprite]
+
+player.rect = player.image.get_rect()
+player.rect.topleft = [player.x, player.y]
+
 timerevent = pygame.event.custom_type()
 pygame.time.set_timer(timerevent, 1000)
 
 last = pygame.time.get_ticks()
 now = pygame.time.get_ticks()
+
+isdying = False
 
 while running:
 
@@ -227,6 +254,8 @@ while running:
             running = False
 
     keys = pygame.key.get_pressed()
+    if keys[pygame.K_d]:
+        isdying = True
     if keys[pygame.K_x]:
         if now-last > 1500:
             last = pygame.time.get_ticks()
@@ -261,6 +290,8 @@ while running:
             y_vel = jump_height
     if player.ispunching:
         player.punch()
+    if isdying:
+        player.die()
 
     if player.x >= SCREEN_WIDTH-100:
         player.x = SCREEN_WIDTH-100
