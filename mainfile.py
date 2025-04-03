@@ -32,6 +32,15 @@ class Player(pygame.sprite.Sprite):
         self.currentidlesprite = 0
         self.hurtsprites = []
         self.currenthurtsprite = 0
+        self.cooldowncount = 0
+        self.ispunching = False
+    def cooldown(self):
+        """
+        if self.cooldowncount == 10:
+            self.cooldowncount = 0
+        elif self.cooldowncount >= 0:
+            self.cooldowncount += 1
+        """
     def update(self):
         self.currentsprite += 0.2
 
@@ -60,10 +69,16 @@ class Player(pygame.sprite.Sprite):
         if self.goingright:
             self.image = pygame.transform.flip(self.image, True, False)
     def punch(self):
-
-        self.image = self.hurtsprites[int(self.currenthurtsprite)]
-        if self.goingright:
-            self.image = pygame.transform.flip(self.image, True, False)
+        self.cooldown()
+        if self.cooldowncount == 0:
+            print("monk")
+            self.image = self.hurtsprites[int(self.currenthurtsprite)]
+            if self.goingright:
+                self.image = pygame.transform.flip(self.image, True, False)
+            self.currenthurtsprite += 0.3
+            if self.currenthurtsprite >= len(self.hurtsprites):
+                self.ispunching = False
+                self.currenthurtsprite = 0
     def changex(self, xval):
         self.x+=xval
         self.rect.topleft = [self.x, self.y]
@@ -190,6 +205,12 @@ player.image = player.hurtsprites[player.currenthurtsprite]
 player.rect = player.image.get_rect()
 player.rect.topleft = [player.x, player.y]
 
+timerevent = pygame.event.custom_type()
+pygame.time.set_timer(timerevent, 1000)
+
+last = pygame.time.get_ticks()
+now = pygame.time.get_ticks()
+
 while running:
 
     screen.fill((0,0,0))
@@ -207,11 +228,13 @@ while running:
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_x]:
-        ispunching = True
-    elif keys[pygame.K_SPACE]:
+        if now-last > 1500:
+            last = pygame.time.get_ticks()
+            player.ispunching = True
+    if keys[pygame.K_SPACE]:
         isjumping = True
         #player.jumpdate()
-    elif keys[pygame.K_LEFT]:
+    if keys[pygame.K_LEFT]:
         player.update()
         player.goingright = True
         #screen.fill((0,0,0))
@@ -236,13 +259,8 @@ while running:
         if y_vel < -jump_height:
             isjumping = False
             y_vel = jump_height
-    if ispunching:
+    if player.ispunching:
         player.punch()
-        player.currenthurtsprite += 0.3
-
-        if player.currenthurtsprite >= len(player.hurtsprites):
-            ispunching = False
-            player.currenthurtsprite = 0
 
     if player.x >= SCREEN_WIDTH-100:
         player.x = SCREEN_WIDTH-100
@@ -254,6 +272,6 @@ while running:
     pygame.display.flip()
     clock.tick(30)
 
-    print(player.x)
+    now = pygame.time.get_ticks()
 
 pygame.quit()
