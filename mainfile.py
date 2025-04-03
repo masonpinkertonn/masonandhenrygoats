@@ -5,6 +5,8 @@ import random
 import math
 import time
 
+# Do spritesheet for idle animation to maintain player size
+
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
@@ -12,19 +14,8 @@ class Player(pygame.sprite.Sprite):
         self.y = y
         self.goingright = False
         self.sprites = []
-        names = []
-        for i in range(6):
-            names.append('tile00'+str(i)+'.png')
-        for i in names:
-            tsimage = pygame.image.load(i)
-            tsimage = pygame.transform.scale(tsimage, (200,200))
-            self.image = tsimage
-            self.sprites.append(tsimage)
-        self.currentsprite = 0
-        self.image = self.sprites[self.currentsprite]
-
-        self.rect = self.image.get_rect()
-        self.rect.topleft = [self.x, self.y]
+        self.jumpsprites = []
+        self.currentjumpsprite = 0
     def update(self):
         self.currentsprite += 0.2
 
@@ -34,6 +25,21 @@ class Player(pygame.sprite.Sprite):
         self.image = self.sprites[int(self.currentsprite)]
         if self.goingright:
             self.image = pygame.transform.flip(self.image, True, False)
+    def jumpdate(self):
+        self.currentjumpsprite += 0.2
+
+        if self.currentjumpsprite >= len(self.jumpsprites):
+            self.currentjumpsprite = 0
+
+        self.image = self.jumpsprites[int(self.currentjumpsprite)]
+        if self.goingright:
+            self.image = pygame.transform.flip(self.image, True, False)
+    def idling(self):
+        tsimage = pygame.image.load('Biker_idle.png')
+        tsimage = pygame.transform.scale(tsimage, (200,200))
+        player.image = tsimage
+        player.rect = player.image.get_rect()
+        player.rect.topleft = [player.x, player.y]
     def changex(self, xval):
         self.x+=xval
         self.rect.topleft = [self.x, self.y]
@@ -72,7 +78,7 @@ jumpheight *= 2
 running = True
 clock = pygame.time.Clock()
 
-isjumping = False
+isjumping = True
 
 y_gravity = 1
 jump_height = 20
@@ -82,6 +88,38 @@ movingsprites = pygame.sprite.Group()
 player = Player(x,y)
 movingsprites.add(player)
 
+isrunning = True
+
+names = []
+for i in range(6):
+    names.append('tile00'+str(i)+'.png')
+for i in names:
+    tsimage = pygame.image.load(i)
+    tsimage = pygame.transform.scale(tsimage, (200,200))
+    player.image = tsimage
+    player.sprites.append(tsimage)
+player.currentsprite = 0
+player.image = player.sprites[player.currentsprite]
+
+player.rect = player.image.get_rect()
+player.rect.topleft = [player.x, player.y]
+
+
+
+jumpnames = []
+for i in range(4):
+    jumpnames.append('jump00'+str(i)+'.png')
+for i in jumpnames:
+    tsimage = pygame.image.load(i)
+    tsimage = pygame.transform.scale(tsimage, (200,200))
+    player.image = tsimage
+    player.jumpsprites.append(tsimage)
+player.currentjumpsprite = 0
+player.image = player.jumpsprites[player.currentjumpsprite]
+
+player.rect = player.image.get_rect()
+player.rect.topleft = [player.x, player.y]
+
 while running:
 
     screen.fill((0,0,0))
@@ -89,8 +127,6 @@ while running:
     key = pygame.key.get_pressed()
     screen.blit(player.image, (player.x, player.y))
     #movingsprites.draw(screen)
-    
-    player.update()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -98,6 +134,7 @@ while running:
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT]:
+        player.update()
         player.goingright = True
         #screen.fill((0,0,0))
         #player.update()
@@ -107,10 +144,14 @@ while running:
         #screen.blit(player.image, (player.x, player.y))
         player.changex(-2)
     elif keys[pygame.K_RIGHT]:
+        player.update()
         player.goingright = False
         player.changex(2)
     elif keys[pygame.K_SPACE]:
         isjumping = True
+        player.jumpdate()
+    else:
+        player.idling()
 
     if isjumping:
         #screen.fill((0,0,0))
