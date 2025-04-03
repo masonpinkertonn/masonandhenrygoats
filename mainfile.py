@@ -6,7 +6,7 @@ import math
 import time
 
 # Do spritesheet for idle animation to maintain player size
-
+"""
 class Monster(pygame.sprite.Sprite):
     def __init__(self, x, y, speed):
         super().__init__()
@@ -16,6 +16,7 @@ class Monster(pygame.sprite.Sprite):
         self.image = pygame.image.load('monsteridle.png')
     def addzombie(self):
         screen.blit(self.image, (self.x,self.y))
+"""
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -110,7 +111,7 @@ movingsprites = pygame.sprite.Group()
 player = Player(x,y)
 movingsprites.add(player)
 
-monster = Monster(0, random.randrange(0,SCREEN_HEIGHT-20), 25)
+#monster = Monster(0, random.randrange(0,SCREEN_HEIGHT-20), 25)
 
 isrunning = True
 
@@ -192,8 +193,8 @@ while running:
 
     screen.fill((0,0,0))
 
-    monster.addzombie()
-    monster.x += monster.speed
+    #monster.addzombie()
+    #monster.x += monster.speed
 
     key = pygame.key.get_pressed()
     screen.blit(player.image, (player.x, player.y))
@@ -218,11 +219,11 @@ while running:
         #movingsprites = pygame.sprite.Group()
         #movingsprites.add(player)
         #screen.blit(player.image, (player.x, player.y))
-        player.changex(-2)
+        player.changex(-5)
     elif keys[pygame.K_RIGHT]:
         player.update()
         player.goingright = False
-        player.changex(2)
+        player.changex(5)
     else:
         player.idling()
 
@@ -242,8 +243,16 @@ while running:
             ispunching = False
             player.currenthurtsprite = 0
 
+    if player.x >= SCREEN_WIDTH-100:
+        player.x = SCREEN_WIDTH-100
+        player.rect.topleft = [player.x, player.y]
+    if player.x <= -100:
+        player.x = -100
+        player.rect.topleft = [player.x, player.y]
 
     pygame.display.flip()
     clock.tick(30)
+
+    print(player.x)
 
 pygame.quit()
