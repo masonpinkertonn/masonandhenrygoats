@@ -4,6 +4,7 @@ import sys
 import random
 import math
 import time
+import pytmx as tmx
 
 # Do spritesheet for idle animation to maintain player size
 """
