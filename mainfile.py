@@ -28,6 +28,8 @@ class Player(pygame.sprite.Sprite):
         self.currentjumpsprite = 0
         self.idlesprites = []
         self.currentidlesprite = 0
+        self.hurtsprites = []
+        self.currenthurtsprite = 0
     def update(self):
         self.currentsprite += 0.2
 
@@ -53,6 +55,11 @@ class Player(pygame.sprite.Sprite):
             self.currentidlesprite = 0
 
         self.image = self.idlesprites[int(self.currentidlesprite)]
+        if self.goingright:
+            self.image = pygame.transform.flip(self.image, True, False)
+    def punch(self):
+
+        self.image = self.hurtsprites[int(self.currenthurtsprite)]
         if self.goingright:
             self.image = pygame.transform.flip(self.image, True, False)
     def changex(self, xval):
@@ -137,6 +144,8 @@ player.image = player.jumpsprites[player.currentjumpsprite]
 player.rect = player.image.get_rect()
 player.rect.topleft = [player.x, player.y]
 
+ispunching = False
+
 jumpnames = []
 for i in range(4):
     jumpnames.append('jump00'+str(i)+'.png')
@@ -165,6 +174,20 @@ player.image = player.idlesprites[player.currentidlesprite]
 player.rect = player.image.get_rect()
 player.rect.topleft = [player.x, player.y]
 
+hurtnames = []
+for i in range(6):
+    hurtnames.append('hurt00'+str(i)+'.png')
+for i in hurtnames:
+    tsimage = pygame.image.load(i)
+    tsimage = pygame.transform.scale(tsimage, (200,200))
+    player.image = tsimage
+    player.hurtsprites.append(tsimage)
+player.currenthurtsprite = 0
+player.image = player.hurtsprites[player.currenthurtsprite]
+
+player.rect = player.image.get_rect()
+player.rect.topleft = [player.x, player.y]
+
 while running:
 
     screen.fill((0,0,0))
@@ -181,10 +204,12 @@ while running:
             running = False
 
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_SPACE]:
+    if keys[pygame.K_x]:
+        ispunching = True
+    elif keys[pygame.K_SPACE]:
         isjumping = True
         #player.jumpdate()
-    if keys[pygame.K_LEFT]:
+    elif keys[pygame.K_LEFT]:
         player.update()
         player.goingright = True
         #screen.fill((0,0,0))
@@ -209,6 +234,13 @@ while running:
         if y_vel < -jump_height:
             isjumping = False
             y_vel = jump_height
+    if ispunching:
+        player.punch()
+        player.currenthurtsprite += 0.3
+
+        if player.currenthurtsprite >= len(player.hurtsprites):
+            ispunching = False
+            player.currenthurtsprite = 0
 
 
     pygame.display.flip()
