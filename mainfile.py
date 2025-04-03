@@ -37,6 +37,13 @@ class Player(pygame.sprite.Sprite):
     def changex(self, xval):
         self.x+=xval
         self.rect.topleft = [self.x, self.y]
+    def changey(self, isjumping):
+        self.y -= y_vel
+        y_vel -= y_gravity
+        if y_vel < -jump_height:
+            isjumping = False
+            y_vel = jump_height
+        return isjumping
 
 
 pygame.init()
@@ -106,7 +113,7 @@ while running:
         isjumping = True
 
     if isjumping:
-        screen.fill((0,0,0))
+        #screen.fill((0,0,0))
         player.y -= y_vel
         y_vel -= y_gravity
         if y_vel < -jump_height:
