@@ -92,12 +92,12 @@ while running:
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT]:
         player.goingright = True
-        screen.fill((0,0,0))
-        player.update()
+        #screen.fill((0,0,0))
+        #player.update()
         #player.image = pygame.transform.flip(player.image, True, False)
         #movingsprites = pygame.sprite.Group()
         #movingsprites.add(player)
-        screen.blit(player.image, (player.x, player.y))
+        #screen.blit(player.image, (player.x, player.y))
         player.changex(-2)
     elif keys[pygame.K_RIGHT]:
         player.goingright = False
