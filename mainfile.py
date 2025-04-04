@@ -6,6 +6,10 @@ import math
 import time
 import pytmx as tmx
 
+pygame.font.init()
+
+txtfont = pygame.font.SysFont("Arial", 30)
+
 # Do spritesheet for idle animation to maintain player size
 """
 class Monster(pygame.sprite.Sprite):
@@ -18,6 +22,16 @@ class Monster(pygame.sprite.Sprite):
     def addzombie(self):
         screen.blit(self.image, (self.x,self.y))
 """
+
+class ACRATE(pygame.sprite.Sprite):
+    def __init__(self, numbullets, isshowing, x):
+        super().__init__()
+        self.numbullets = numbullets
+        self.img = pygame.image.load('ammocrate.png')
+        self.rect = self.img.get_rect()
+        self.rect.topleft = [x,150]
+        self.isshowing = isshowing
+        self.x = x
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -36,6 +50,7 @@ class Player(pygame.sprite.Sprite):
         self.ispunching = False
         self.currentdiesprite = 0
         self.diesprites = []
+        self.ratio = 1
     def cooldown(self):
         """
         if self.cooldowncount == 10:
@@ -92,6 +107,7 @@ class Player(pygame.sprite.Sprite):
         return isjumping
     def die(self):
         self.currentdiesprite += 0.1
+        self.ratio -= 0.025
 
         if self.currentdiesprite >= len(self.diesprites):
             pygame.quit()
@@ -100,6 +116,18 @@ class Player(pygame.sprite.Sprite):
         self.image = self.diesprites[int(self.currentdiesprite)]
         if self.goingright:
             self.image = pygame.transform.flip(self.image, True, False)
+
+class boolets:
+    def __init__(self, bullets, text, font, textcol, x, y):
+        self.bullets = bullets
+        self.text = text
+        self.font = font
+        self.textcol = textcol
+        self.x = x
+        self.y = y
+    def drawtxt(self):
+        img = self.font.render(self.text+str(self.bullets), True, self.textcol)
+        screen.blit(img, (self.x,self.y))
 
 
 pygame.init()
@@ -110,6 +138,8 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 x = 100
 y = 100
+
+bullets = boolets(0, "Bullets: ", txtfont, (255,255,255), 200, 150)
 
 """
 player = pygame.image.load('Biker_idle.png')
@@ -238,9 +268,27 @@ now = pygame.time.get_ticks()
 
 isdying = False
 
+player.ratio=1
+
+tscrate = ACRATE(5, True, 300)
+
 while running:
 
     screen.fill((0,0,0))
+
+    if tscrate.isshowing:
+        screen.blit(tscrate.img, (tscrate.x,150))
+
+    if player.x == tscrate.rect.topleft[0]:
+        bullets.bullets += tscrate.numbullets
+        tscrate.isshowing = False
+        tscrate.x = -500000
+        tscrate.rect.topleft = [tscrate.x, 150]
+
+    bullets.drawtxt()
+
+    pygame.draw.rect(screen, "red", (0,0,300,40))
+    pygame.draw.rect(screen, "green", (0,0,300*player.ratio,40))
 
     #monster.addzombie()
     #monster.x += monster.speed
@@ -254,6 +302,8 @@ while running:
             running = False
 
     keys = pygame.key.get_pressed()
+    if keys[pygame.K_b]:
+        bullets.bullets += 1
     if keys[pygame.K_d]:
         isdying = True
     if keys[pygame.K_x]:
