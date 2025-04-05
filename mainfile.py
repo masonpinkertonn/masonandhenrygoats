@@ -28,8 +28,9 @@ class ACRATE(pygame.sprite.Sprite):
         super().__init__()
         self.numbullets = numbullets
         self.img = pygame.image.load('ammocrate.png')
+        self.img = pygame.transform.scale(self.img, (100,75))
         self.rect = self.img.get_rect()
-        self.rect.topleft = [x,150]
+        self.rect.topleft = [x-100,225]
         self.isshowing = isshowing
         self.x = x
 
@@ -139,7 +140,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 x = 100
 y = 100
 
-bullets = boolets(0, "Bullets: ", txtfont, (255,255,255), 200, 150)
+bullets = boolets(0, "Bullets: ", txtfont, (255,255,255), 0, 570)
 
 """
 player = pygame.image.load('Biker_idle.png')
@@ -277,7 +278,7 @@ while running:
     screen.fill((0,0,0))
 
     if tscrate.isshowing:
-        screen.blit(tscrate.img, (tscrate.x,150))
+        screen.blit(tscrate.img, (tscrate.x,225))
 
     if player.x == tscrate.rect.topleft[0]:
         bullets.bullets += tscrate.numbullets
