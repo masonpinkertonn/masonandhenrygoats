@@ -107,16 +107,21 @@ class Player(pygame.sprite.Sprite):
             y_vel = jump_height
         return isjumping
     def die(self):
+
+        running = True
+
         self.currentdiesprite += 0.1
         self.ratio -= 0.025
 
         if self.currentdiesprite >= len(self.diesprites):
-            pygame.quit()
+            running = False
             self.currentdiesprite = 0
 
         self.image = self.diesprites[int(self.currentdiesprite)]
         if self.goingright:
             self.image = pygame.transform.flip(self.image, True, False)
+        
+        return running
 
 class boolets:
     def __init__(self, bullets, text, font, textcol, x, y):
@@ -342,7 +347,9 @@ while running:
     if player.ispunching:
         player.punch()
     if isdying:
-        player.die()
+        tssssss = player.die()
+        if not(tssssss):
+            running = False
 
     if player.x >= SCREEN_WIDTH-100:
         player.x = SCREEN_WIDTH-100
