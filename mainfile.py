@@ -5,6 +5,7 @@ import random
 import math
 import time
 import pytmx as tmx
+#import pygame_ce
 
 pygame.font.init()
 
