@@ -284,12 +284,16 @@ while running:
 
     if tscrate.isshowing:
         screen.blit(tscrate.img, (tscrate.x,225))
+    else:
+        tscrate = ACRATE(5, True, random.randint(100, 700))
+        print()
 
     if player.x == tscrate.rect.topleft[0]:
+        print("Touching")
         bullets.bullets += tscrate.numbullets
         tscrate.isshowing = False
-        tscrate.x = -500000
-        tscrate.rect.topleft = [tscrate.x, 150]
+        #tscrate.x = -500000
+        #tscrate.rect.topleft = [tscrate.x, 150]
 
     bullets.drawtxt()
 
