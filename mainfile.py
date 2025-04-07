@@ -285,8 +285,7 @@ while running:
     if tscrate.isshowing:
         screen.blit(tscrate.img, (tscrate.x,225))
     else:
-        tscrate = ACRATE(5, True, random.randint(100, 700))
-        print()
+        tscrate = ACRATE(5, True, random.randrange(100, 700, 5))
 
     if player.x == tscrate.rect.topleft[0]:
         print("Touching")
