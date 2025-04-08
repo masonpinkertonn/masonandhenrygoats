@@ -24,6 +24,11 @@ class Monster(pygame.sprite.Sprite):
         screen.blit(self.image, (self.x,self.y))
 """
 
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+
+
 class ACRATE(pygame.sprite.Sprite):
     def __init__(self, numbullets, isshowing, x):
         super().__init__()
@@ -52,6 +57,8 @@ class Player(pygame.sprite.Sprite):
         self.ispunching = False
         self.currentdiesprite = 0
         self.diesprites = []
+        self.currentgunsprite = 0
+        self.gunsprites = []
         self.ratio = 1
     def cooldown(self):
         """
@@ -60,6 +67,17 @@ class Player(pygame.sprite.Sprite):
         elif self.cooldowncount >= 0:
             self.cooldowncount += 1
         """
+    def gunman(self):
+        print("gunnn")
+        self.currentgunsprite += 0.2
+
+        if self.currentgunsprite >= len(self.gunsprites):
+            self.currentgunsprite = 0
+
+        self.image = self.gunsprites[int(self.currentgunsprite)]
+        
+        if self.goingright:
+            self.image = pygame.transform.flip(self.image, True, False)
     def update(self):
         self.currentsprite += 0.2
 
@@ -267,6 +285,20 @@ player.image = player.diesprites[player.currentdiesprite]
 player.rect = player.image.get_rect()
 player.rect.topleft = [player.x, player.y]
 
+gunnames = []
+for i in range(4):
+    gunnames.append('ts00'+str(i)+'.png')
+for i in gunnames:
+    tsimage = pygame.image.load(i)
+    tsimage = pygame.transform.scale(tsimage, (200,200))
+    player.image = tsimage
+    player.gunsprites.append(tsimage)
+player.currentgunsprite = 0
+player.image = player.gunsprites[player.currentgunsprite]
+
+player.rect = player.image.get_rect()
+player.rect.topleft = [player.x, player.y]
+
 timerevent = pygame.event.custom_type()
 pygame.time.set_timer(timerevent, 1000)
 
@@ -317,9 +349,10 @@ while running:
     if keys[pygame.K_d]:
         isdying = True
     if keys[pygame.K_x]:
-        if now-last > 1500:
-            last = pygame.time.get_ticks()
-            player.ispunching = True
+        #if now-last > 1500:
+            #last = pygame.time.get_ticks()
+            #player.ispunching = True
+        player.gunman()
     if keys[pygame.K_SPACE]:
         isjumping = True
         #player.jumpdate()
@@ -350,6 +383,7 @@ while running:
             y_vel = jump_height
     if player.ispunching:
         player.punch()
+        pygame.draw.circle(screen, "pink", (player.x+125,player.y+125), 20)
     if isdying:
         tssssss = player.die()
         if not(tssssss):
