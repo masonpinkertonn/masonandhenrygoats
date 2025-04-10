@@ -5,6 +5,10 @@ import random
 import math
 import time
 import pytmx as tmx
+from spritesheet import Spritesheet
+import csv
+import json
+import tiles
 #import pygame_ce
 
 pygame.font.init()
@@ -25,6 +29,12 @@ class Monster(pygame.sprite.Sprite):
 """
 
 needmoreboolets = []
+ourspritesheet = Spritesheet('industrybaby.png')
+player_rect = player_img.get_rect()
+player_img = ourspritesheet.parse_sprite('gunman000.png')
+
+map = TileMap('industrial_map_ground.csv', spritesheet )
+player_rect.x, player_rect.y = map.start_x, map.start_y
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, iscreated, x, y, booletvel, stdx, snapshot, isright):
