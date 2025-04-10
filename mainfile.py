@@ -24,9 +24,51 @@ class Monster(pygame.sprite.Sprite):
         screen.blit(self.image, (self.x,self.y))
 """
 
+needmoreboolets = []
+
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, iscreated, x, y, booletvel, stdx, snapshot, isright):
         super().__init__()
+        self.iscreated = iscreated
+        self.x = x
+        self.y = y
+        self.booletvel = booletvel
+        self.stdx = stdx
+        self.snapshot = snapshot
+        self.isright = isright
+        self.sprites = []
+        self.currentsprite = 0
+        self.image = 0
+    def update(self):
+        self.currentsprite += 1
+
+        if self.currentsprite >= len(self.sprites):
+            self.currentsprite = 21
+
+        self.image = self.sprites[int(self.currentsprite)]
+        if self.isright:
+            self.image = pygame.transform.flip(self.image, True, False)
+
+        screen.blit(self.image, (self.x,player.y+100))
+
+tsbullet = Bullet(False, 0, 0, 10, 0, False, False)
+needmoreboolets.append(tsbullet)
+
+def makeani(tsbullet):
+
+    names = []
+    for i in range(22):
+        names.append(str(i)+'.png')
+    for i in names:
+        tsimage = pygame.image.load(i)
+        tsimage = pygame.transform.scale(tsimage, (200,200))
+        tsbullet.image = tsimage
+        tsbullet.sprites.append(tsimage)
+    tsbullet.currentsprite = 0
+    tsbullet.image = tsbullet.sprites[tsbullet.currentsprite]
+
+    tsbullet.rect = tsbullet.image.get_rect()
+    tsbullet.rect.topleft = [tsbullet.x, player.y+100]
 
 
 class ACRATE(pygame.sprite.Sprite):
@@ -68,16 +110,18 @@ class Player(pygame.sprite.Sprite):
             self.cooldowncount += 1
         """
     def gunman(self):
-        print("gunnn")
-        self.currentgunsprite += 0.2
-
-        if self.currentgunsprite >= len(self.gunsprites):
-            self.currentgunsprite = 0
-
-        self.image = self.gunsprites[int(self.currentgunsprite)]
-        
-        if self.goingright:
-            self.image = pygame.transform.flip(self.image, True, False)
+        self.cooldown()
+        if self.cooldowncount == 0:
+            self.image = self.gunsprites[int(self.currentgunsprite)]
+            if self.goingright:
+                self.image = pygame.transform.flip(self.image, True, False)
+            self.currentgunsprite += 0.2
+            if self.currentgunsprite >= len(self.gunsprites):
+                self.ispunching = False
+                self.currentgunsprite = 0
+            if round(self.currentgunsprite, 1) == 3.0:
+                tsbullet = Bullet(True, 0, 0, 10, 0, False, False)
+                needmoreboolets.append(tsbullet)
     def update(self):
         self.currentsprite += 0.2
 
@@ -286,8 +330,8 @@ player.rect = player.image.get_rect()
 player.rect.topleft = [player.x, player.y]
 
 gunnames = []
-for i in range(4):
-    gunnames.append('ts00'+str(i)+'.png')
+for i in range(6):
+    gunnames.append('coolio00'+str(i)+'.png')
 for i in gunnames:
     tsimage = pygame.image.load(i)
     tsimage = pygame.transform.scale(tsimage, (200,200))
@@ -311,9 +355,44 @@ player.ratio=1
 
 tscrate = ACRATE(5, True, 300)
 
+#booletvel = 10
+
 while running:
 
     screen.fill((0,0,0))
+
+    #print(needmoreboolets)
+
+    for i in needmoreboolets:
+
+        if i.snapshot == False:
+            makeani(i)
+            i.snapshot = True
+            if player.goingright:
+                i.stdx = player.x+150
+            else:
+                i.stdx = player.x
+            i.isright = player.goingright
+            i.x = i.stdx
+
+        if i.x >= SCREEN_WIDTH or i.x <= -100:
+            i.iscreated = False
+            #i.x = 0
+            i.booletvel = 1
+            #i.iscreated = False
+            needmoreboolets.remove(i)
+
+        if i.iscreated == True:
+            i.update()
+            #screen.blit(i.image, (i.x, 150))
+            if not(i.isright):
+                i.x += i.booletvel
+                #pygame.draw.circle(screen, "pink", (i.x, player.y+100), 20)
+                #i.booletvel += 1
+            else:
+                i.x -= i.booletvel
+                #pygame.draw.circle(screen, "pink", (i.x, player.y+100), 20)
+                #i.booletvel += 1
 
     if tscrate.isshowing:
         screen.blit(tscrate.img, (tscrate.x,225))
@@ -349,10 +428,13 @@ while running:
     if keys[pygame.K_d]:
         isdying = True
     if keys[pygame.K_x]:
-        #if now-last > 1500:
-            #last = pygame.time.get_ticks()
-            #player.ispunching = True
-        player.gunman()
+        if bullets.bullets == 0:
+            print("No bullets.")
+        else:
+            if now-last > 1500:
+                last = pygame.time.get_ticks()
+                bullets.bullets -= 1
+                player.ispunching = True
     if keys[pygame.K_SPACE]:
         isjumping = True
         #player.jumpdate()
@@ -382,8 +464,8 @@ while running:
             isjumping = False
             y_vel = jump_height
     if player.ispunching:
-        player.punch()
-        pygame.draw.circle(screen, "pink", (player.x+125,player.y+125), 20)
+        player.gunman()
+        #pygame.draw.circle(screen, "pink", (player.x+125,player.y+125), 20)
     if isdying:
         tssssss = player.die()
         if not(tssssss):
