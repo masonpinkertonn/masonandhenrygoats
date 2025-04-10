@@ -4,17 +4,18 @@ import spritesheet
 class Tile(pygame.sprite.Sprite):
     def __init__(self, image, x, y, spritesheet):
         pygame.sprite.Sprite.__init__(self)
-        self.image = spritesheet.parse_sprite(image)
+        self.image = pygame.image.load(image)
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = x, y
     def draw(self, surface):
         surface.blit(self.image, (self.rect.x, self.rect.y))
 class Tilemap():
-    def __init__(self, filename, spritesheet, map_surface):
+    def __init__(self, filename, spritesheet):
         self.tilesize = 32
         self.start_x, self.start_y = 0, 0
         self.spritesheet = spritesheet
         self.tiles = self.load_tiles(filename)
+        self.map_surface = pygame.Surface((self.map_w, self.map_h))
         self.map_surface.set_colorkey((0, 0, 0))
         self.load_map()
 

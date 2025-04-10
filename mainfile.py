@@ -8,7 +8,7 @@ import pytmx as tmx
 from spritesheet import Spritesheet
 import csv
 import json
-from tiles import Tilemap
+from tiles import *
 #import pygame_ce
 
 pygame.font.init()
@@ -37,7 +37,7 @@ ourspritesheet = Spritesheet('industrybaby.png')
 player_img = ourspritesheet.parse_sprite('Biker_idle.png')
 player_rect = player_img.get_rect()
 
-map = Tilemap('industrial_map_ground.csv', ourspritesheet, screen)
+map = Tilemap('industrial_map_ground.csv', ourspritesheet)
 player_rect.x, player_rect.y = map.start_x, map.start_y
 
 class Bullet(pygame.sprite.Sprite):
@@ -371,6 +371,8 @@ tscrate = ACRATE(5, True, 300)
 while running:
 
     screen.fill((0,0,0))
+
+    map.draw_map(screen)
 
     #print(needmoreboolets)
 
