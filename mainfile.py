@@ -27,7 +27,7 @@ class Monster(pygame.sprite.Sprite):
 needmoreboolets = []
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, iscreated, x, y, booletvel, stdx, snapshot, isright):
+    def __init__(self, iscreated, x, y, booletvel, stdx, stdy, snapshot, isright):
         super().__init__()
         self.iscreated = iscreated
         self.x = x
@@ -39,6 +39,7 @@ class Bullet(pygame.sprite.Sprite):
         self.sprites = []
         self.currentsprite = 0
         self.image = 0
+        self.stdy = stdy
     def update(self):
         self.currentsprite += 1
 
@@ -49,9 +50,9 @@ class Bullet(pygame.sprite.Sprite):
         if self.isright:
             self.image = pygame.transform.flip(self.image, True, False)
 
-        screen.blit(self.image, (self.x,player.y+100))
+        screen.blit(self.image, (self.x,self.y))
 
-tsbullet = Bullet(False, 0, 0, 10, 0, False, False)
+tsbullet = Bullet(False, 0, 0, 10, 0, 0, False, False)
 needmoreboolets.append(tsbullet)
 
 def makeani(tsbullet):
@@ -68,7 +69,7 @@ def makeani(tsbullet):
     tsbullet.image = tsbullet.sprites[tsbullet.currentsprite]
 
     tsbullet.rect = tsbullet.image.get_rect()
-    tsbullet.rect.topleft = [tsbullet.x, player.y+100]
+    tsbullet.rect.topleft = [tsbullet.x, player.y+25]
 
 
 class ACRATE(pygame.sprite.Sprite):
@@ -120,7 +121,7 @@ class Player(pygame.sprite.Sprite):
                 self.ispunching = False
                 self.currentgunsprite = 0
             if round(self.currentgunsprite, 1) == 3.0:
-                tsbullet = Bullet(True, 0, 0, 10, 0, False, False)
+                tsbullet = Bullet(True, 0, 0, 10, 0, 0, False, False)
                 needmoreboolets.append(tsbullet)
     def update(self):
         self.currentsprite += 0.2
@@ -368,12 +369,14 @@ while running:
         if i.snapshot == False:
             makeani(i)
             i.snapshot = True
+            i.stdy = player.y + 25
             if player.goingright:
-                i.stdx = player.x+150
+                i.stdx = player.x+50
             else:
                 i.stdx = player.x
             i.isright = player.goingright
             i.x = i.stdx
+            i.y = i.stdy
 
         if i.x >= SCREEN_WIDTH or i.x <= -100:
             i.iscreated = False
