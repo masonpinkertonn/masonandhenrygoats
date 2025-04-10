@@ -8,13 +8,17 @@ import pytmx as tmx
 from spritesheet import Spritesheet
 import csv
 import json
-import tiles
+from tiles import Tilemap
 #import pygame_ce
 
 pygame.font.init()
 
 txtfont = pygame.font.SysFont("Arial", 30)
+pygame.init()
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
 
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 # Do spritesheet for idle animation to maintain player size
 """
 class Monster(pygame.sprite.Sprite):
@@ -30,10 +34,10 @@ class Monster(pygame.sprite.Sprite):
 
 needmoreboolets = []
 ourspritesheet = Spritesheet('industrybaby.png')
+player_img = ourspritesheet.parse_sprite('Biker_idle.png')
 player_rect = player_img.get_rect()
-player_img = ourspritesheet.parse_sprite('gunman000.png')
 
-map = TileMap('industrial_map_ground.csv', spritesheet )
+map = Tilemap('industrial_map_ground.csv', ourspritesheet, screen)
 player_rect.x, player_rect.y = map.start_x, map.start_y
 
 class Bullet(pygame.sprite.Sprite):
@@ -209,11 +213,7 @@ class boolets:
         screen.blit(img, (self.x,self.y))
 
 
-pygame.init()
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 x = 100
 y = 100
