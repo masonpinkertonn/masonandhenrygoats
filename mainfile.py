@@ -13,6 +13,11 @@ from tiles import *
 
 pygame.font.init()
 
+bg = pygame.image.load('explore-the-neon-lit-cyberpunk-city-in-this-pixel-art-atwc3enbcz2113ry.jpg')
+bg = pygame.transform.scale(bg, (1920, 1080))
+pygame.mouse.set_visible(0)
+
+
 txtfont = pygame.font.SysFont("Arial", 30)
 pygame.init()
 SCREEN_WIDTH = 1920
@@ -403,7 +408,7 @@ tscrate = ACRATE(5, True, 300)
 while running:
 
     screen.fill((0,0,0))
-
+    screen.blit(bg, (0, 0))
     map.draw_map(screen)
 
     #print(needmoreboolets)
