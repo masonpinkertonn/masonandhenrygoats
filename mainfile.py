@@ -15,8 +15,8 @@ pygame.font.init()
 
 txtfont = pygame.font.SysFont("Arial", 30)
 pygame.init()
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 1920
+SCREEN_HEIGHT = 1080
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 # Do spritesheet for idle animation to maintain player size
@@ -65,6 +65,38 @@ class Bullet(pygame.sprite.Sprite):
             self.image = pygame.transform.flip(self.image, True, False)
 
         screen.blit(self.image, (self.x,self.y))
+
+    def checks(self):
+        if self.snapshot == False:
+            makeani(self)
+            self.snapshot = True
+            self.stdy = player.y + 25
+            if player.goingright:
+                self.stdx = player.x+50
+            else:
+                self.stdx = player.x
+            self.isright = player.goingright
+            self.x = self.stdx
+            self.y = self.stdy
+
+        if self.x >= SCREEN_WIDTH or self.x <= -100:
+            self.iscreated = False
+            #i.x = 0
+            self.booletvel = 1
+            #i.iscreated = False
+            needmoreboolets.remove(self)
+
+        if self.iscreated == True:
+            self.update()
+            #screen.blit(i.image, (i.x, 150))
+            if not(self.isright):
+                self.x += self.booletvel
+                #pygame.draw.circle(screen, "pink", (i.x, player.y+100), 20)
+                #i.booletvel += 1
+            else:
+                self.x -= self.booletvel
+                #pygame.draw.circle(screen, "pink", (i.x, player.y+100), 20)
+                #i.booletvel += 1
 
 tsbullet = Bullet(False, 0, 0, 10, 0, 0, False, False)
 needmoreboolets.append(tsbullet)
@@ -135,7 +167,7 @@ class Player(pygame.sprite.Sprite):
                 self.ispunching = False
                 self.currentgunsprite = 0
             if round(self.currentgunsprite, 1) == 3.0:
-                tsbullet = Bullet(True, 0, 0, 10, 0, 0, False, False)
+                tsbullet = Bullet(False, 0, 0, 10, 0, 0, False, False)
                 needmoreboolets.append(tsbullet)
     def update(self):
         self.currentsprite += 0.2
@@ -376,38 +408,10 @@ while running:
 
     #print(needmoreboolets)
 
-    for i in needmoreboolets:
+    if len(needmoreboolets) > 1:
+        print("ok")
 
-        if i.snapshot == False:
-            makeani(i)
-            i.snapshot = True
-            i.stdy = player.y + 25
-            if player.goingright:
-                i.stdx = player.x+50
-            else:
-                i.stdx = player.x
-            i.isright = player.goingright
-            i.x = i.stdx
-            i.y = i.stdy
-
-        if i.x >= SCREEN_WIDTH or i.x <= -100:
-            i.iscreated = False
-            #i.x = 0
-            i.booletvel = 1
-            #i.iscreated = False
-            needmoreboolets.remove(i)
-
-        if i.iscreated == True:
-            i.update()
-            #screen.blit(i.image, (i.x, 150))
-            if not(i.isright):
-                i.x += i.booletvel
-                #pygame.draw.circle(screen, "pink", (i.x, player.y+100), 20)
-                #i.booletvel += 1
-            else:
-                i.x -= i.booletvel
-                #pygame.draw.circle(screen, "pink", (i.x, player.y+100), 20)
-                #i.booletvel += 1
+        needmoreboolets[1].checks()
 
     if tscrate.isshowing:
         screen.blit(tscrate.img, (tscrate.x,225))
@@ -443,13 +447,15 @@ while running:
     if keys[pygame.K_d]:
         isdying = True
     if keys[pygame.K_x]:
-        if bullets.bullets == 0:
-            print("No bullets.")
-        else:
-            if now-last > 1500:
-                last = pygame.time.get_ticks()
-                bullets.bullets -= 1
-                player.ispunching = True
+        print("hola")
+        if not(needmoreboolets[-1].iscreated):
+            if bullets.bullets == 0:
+                print("No bullets.")
+            else:
+                if now-last > 1500:
+                    last = pygame.time.get_ticks()
+                    bullets.bullets -= 1
+                    player.ispunching = True
     if keys[pygame.K_SPACE]:
         isjumping = True
         #player.jumpdate()

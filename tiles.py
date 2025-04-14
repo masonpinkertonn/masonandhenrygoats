@@ -52,7 +52,7 @@ class Tilemap():
                 elif tile == '3':
                     tiles.append(Tile('industrialTile_04.png', x * self.tilesize, y * self.tilesize, self.spritesheet))
                 elif tile == '4':
-                    tiles.append(Tile('industrialTile_06.png', x * self.tilesize, y * self.tilesize, self.spritesheet))
+                    tiles.append(Tile('industrialTile_05.png', x * self.tilesize, y * self.tilesize, self.spritesheet))
                 elif tile == '5':
                     tiles.append(Tile('industrialTile_06.png', x * self.tilesize, y * self.tilesize, self.spritesheet))
                 elif tile == '6':
