@@ -44,15 +44,16 @@ class Bullet(pygame.sprite.Sprite):
     def __init__(self, iscreated, x, y, booletvel, stdx, stdy, snapshot, isright):
         super().__init__()
         self.iscreated = iscreated
-        self.x = x
-        self.y = y
+        #self.x = x
+        #self.y = y
         self.booletvel = booletvel
         self.stdx = stdx
         self.snapshot = snapshot
         self.isright = isright
         self.sprites = []
         self.currentsprite = 0
-        self.image = 0
+        self.image = pygame.image.load("LeMonke.webp")
+        self.rect = self.image.get_rect()
         self.stdy = stdy
     def update(self):
         self.currentsprite += 1
@@ -64,22 +65,22 @@ class Bullet(pygame.sprite.Sprite):
         if self.isright:
             self.image = pygame.transform.flip(self.image, True, False)
 
-        screen.blit(self.image, (self.x,self.y))
+        screen.blit(self.image, (self.rect.x,self.rect.y))
 
     def checks(self):
         if self.snapshot == False:
             makeani(self)
             self.snapshot = True
-            self.stdy = player.y + 25
+            self.stdy = player.rect.y + 25
             if player.goingright:
-                self.stdx = player.x+50
+                self.stdx = player.rect.x+50
             else:
-                self.stdx = player.x
+                self.stdx = player.rect.x
             self.isright = player.goingright
-            self.x = self.stdx
-            self.y = self.stdy
+            self.rect.x = self.stdx
+            self.rect.y = self.stdy
 
-        if self.x >= SCREEN_WIDTH or self.x <= -100:
+        if self.rect.x >= SCREEN_WIDTH or self.rect.x <= -100:
             self.iscreated = False
             #i.x = 0
             self.booletvel = 1
@@ -90,12 +91,12 @@ class Bullet(pygame.sprite.Sprite):
             self.update()
             #screen.blit(i.image, (i.x, 150))
             if not(self.isright):
-                self.x += self.booletvel
-                #pygame.draw.circle(screen, "pink", (i.x, player.y+100), 20)
+                self.rect.x += self.booletvel
+                #pygame.draw.circle(screen, "pink", (i.x, player.rect.y+100), 20)
                 #i.booletvel += 1
             else:
-                self.x -= self.booletvel
-                #pygame.draw.circle(screen, "pink", (i.x, player.y+100), 20)
+                self.rect.x -= self.booletvel
+                #pygame.draw.circle(screen, "pink", (i.x, player.rect.y+100), 20)
                 #i.booletvel += 1
 
 tsbullet = Bullet(False, 0, 0, 10, 0, 0, False, False)
@@ -115,7 +116,7 @@ def makeani(tsbullet):
     tsbullet.image = tsbullet.sprites[tsbullet.currentsprite]
 
     tsbullet.rect = tsbullet.image.get_rect()
-    tsbullet.rect.topleft = [tsbullet.x, player.y+25]
+    #tsbullet.rect.topleft = [tsbullet.x, player.rect.y+25]
 
 
 class ACRATE(pygame.sprite.Sprite):
@@ -125,15 +126,16 @@ class ACRATE(pygame.sprite.Sprite):
         self.img = pygame.image.load('ammocrate.png')
         self.img = pygame.transform.scale(self.img, (100,75))
         self.rect = self.img.get_rect()
-        self.rect.topleft = [x-100,225]
+        self.rect.x = x
+        #self.rect.topleft = [x-100,225]
         self.isshowing = isshowing
-        self.x = x
+        #self.x = x
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.x = x
-        self.y = y
+        #self.x = x
+        #self.y = y
         self.goingright = False
         self.sprites = []
         self.jumpsprites = []
@@ -149,6 +151,25 @@ class Player(pygame.sprite.Sprite):
         self.currentgunsprite = 0
         self.gunsprites = []
         self.ratio = 1
+        self.image = pygame.image.load('coolio000.png')
+        self.rect=self.image.get_rect()
+        self.isjumping = False
+        self.position, self.velocity = pygame.math.Vector2(0,0), pygame.math.Vector2(0,0)
+        self.accel = pygame.math.Vector2(0,0.35)
+        #self.position.x = map.start_x
+        #self.position.y = map.start_y
+    #def checkstuff(self, tiles):
+        #self.
+    def gethits(self, tiles):
+        hits = []
+        for tile in tiles:
+            if self.rect.colliderect(tile):
+                hits.append(tile)
+        return hits
+    def checkCollisionsx(self, tiles):
+        collisions = self.gethits(tiles)
+        for tile in collisions:
+            self.rect.x = self.rect.x-50
     def cooldown(self):
         """
         if self.cooldowncount == 10:
@@ -207,15 +228,15 @@ class Player(pygame.sprite.Sprite):
                 self.ispunching = False
                 self.currenthurtsprite = 0
     def changex(self, xval):
-        self.x+=xval
-        self.rect.topleft = [self.x, self.y]
-    def changey(self, isjumping):
-        self.y -= y_vel
+        self.rect.x+=xval
+        #self.rect.topleft = [self.rect.x, self.y]
+    def changey(self):
+        self.rect.y -= y_vel
         y_vel -= y_gravity
         if y_vel < -jump_height:
-            isjumping = False
+            self.isjumping = False
             y_vel = jump_height
-        return isjumping
+        return self.isjumping
     def die(self):
 
         running = True
@@ -270,8 +291,6 @@ jumpheight *= 2
 running = True
 clock = pygame.time.Clock()
 
-isjumping = False
-
 y_gravity = 1
 jump_height = 20
 y_vel = jump_height
@@ -296,7 +315,7 @@ player.currentsprite = 0
 player.image = player.sprites[player.currentsprite]
 
 player.rect = player.image.get_rect()
-player.rect.topleft = [player.x, player.y]
+#player.rect.topleft = [player.rect.x, player.rect.y]
 
 
 
@@ -312,7 +331,7 @@ player.currentjumpsprite = 0
 player.image = player.jumpsprites[player.currentjumpsprite]
 
 player.rect = player.image.get_rect()
-player.rect.topleft = [player.x, player.y]
+#player.rect.topleft = [player.rect.x, player.rect.y]
 
 ispunching = False
 
@@ -328,7 +347,7 @@ player.currentjumpsprite = 0
 player.image = player.jumpsprites[player.currentjumpsprite]
 
 player.rect = player.image.get_rect()
-player.rect.topleft = [player.x, player.y]
+#player.rect.topleft = [player.rect.x, player.rect.y]
 
 idlenames = []
 for i in range(4):
@@ -342,7 +361,7 @@ player.currentidlesprite = 0
 player.image = player.idlesprites[player.currentidlesprite]
 
 player.rect = player.image.get_rect()
-player.rect.topleft = [player.x, player.y]
+#player.rect.topleft = [player.rect.x, player.rect.y]
 
 hurtnames = []
 for i in range(6):
@@ -356,7 +375,7 @@ player.currenthurtsprite = 0
 player.image = player.hurtsprites[player.currenthurtsprite]
 
 player.rect = player.image.get_rect()
-player.rect.topleft = [player.x, player.y]
+#player.rect.topleft = [player.rect.x, player.rect.y]
 
 dienames = []
 for i in range(6):
@@ -370,7 +389,7 @@ player.currentdiesprite = 0
 player.image = player.diesprites[player.currentdiesprite]
 
 player.rect = player.image.get_rect()
-player.rect.topleft = [player.x, player.y]
+#player.rect.topleft = [player.rect.x, player.rect.y]
 
 gunnames = []
 for i in range(6):
@@ -384,7 +403,7 @@ player.currentgunsprite = 0
 player.image = player.gunsprites[player.currentgunsprite]
 
 player.rect = player.image.get_rect()
-player.rect.topleft = [player.x, player.y]
+#player.rect.topleft = [player.rect.x, player.rect.y]
 
 timerevent = pygame.event.custom_type()
 pygame.time.set_timer(timerevent, 1000)
@@ -414,11 +433,11 @@ while running:
         needmoreboolets[1].checks()
 
     if tscrate.isshowing:
-        screen.blit(tscrate.img, (tscrate.x,225))
+        screen.blit(tscrate.img, (tscrate.rect.x,225))
     else:
         tscrate = ACRATE(5, True, random.randrange(100, 700, 5))
 
-    if player.x == tscrate.rect.topleft[0]:
+    if player.rect.x == tscrate.rect.x:
         print("Touching")
         bullets.bullets += tscrate.numbullets
         tscrate.isshowing = False
@@ -434,7 +453,7 @@ while running:
     #monster.x += monster.speed
 
     key = pygame.key.get_pressed()
-    screen.blit(player.image, (player.x, player.y))
+    screen.blit(player.image, (player.rect.x, player.rect.y))
     #movingsprites.draw(screen)
 
     for event in pygame.event.get():
@@ -457,7 +476,7 @@ while running:
                     bullets.bullets -= 1
                     player.ispunching = True
     if keys[pygame.K_SPACE]:
-        isjumping = True
+        player.isjumping = True
         #player.jumpdate()
     if keys[pygame.K_LEFT]:
         player.update()
@@ -467,7 +486,7 @@ while running:
         #player.image = pygame.transform.flip(player.image, True, False)
         #movingsprites = pygame.sprite.Group()
         #movingsprites.add(player)
-        #screen.blit(player.image, (player.x, player.y))
+        #screen.blit(player.image, (player.rect.x, player.rect.y))
         player.changex(-5)
     elif keys[pygame.K_RIGHT]:
         player.update()
@@ -476,28 +495,28 @@ while running:
     else:
         player.idling()
 
-    if isjumping:
+    if player.isjumping:
         #screen.fill((0,0,0))
         player.jumpdate()
-        player.y -= y_vel
+        player.rect.y -= y_vel
         y_vel -= y_gravity
         if y_vel < -jump_height:
-            isjumping = False
+            player.isjumping = False
             y_vel = jump_height
     if player.ispunching:
         player.gunman()
-        #pygame.draw.circle(screen, "pink", (player.x+125,player.y+125), 20)
+        #pygame.draw.circle(screen, "pink", (player.rect.x+125,player.rect.y+125), 20)
     if isdying:
         tssssss = player.die()
         if not(tssssss):
             running = False
 
-    if player.x >= SCREEN_WIDTH-100:
-        player.x = SCREEN_WIDTH-100
-        player.rect.topleft = [player.x, player.y]
-    if player.x <= -100:
-        player.x = -100
-        player.rect.topleft = [player.x, player.y]
+    if player.rect.x >= SCREEN_WIDTH-100:
+        player.rect.x = SCREEN_WIDTH-100
+        #player.rect.topleft = [player.rect.x, player.rect.y]
+    if player.rect.x <= -100:
+        player.rect.x = -100
+        #player.rect.topleft = [player.rect.x, player.rect.y]
 
     pygame.display.flip()
     clock.tick(30)
