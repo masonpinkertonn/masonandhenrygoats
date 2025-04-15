@@ -124,7 +124,7 @@ class ACRATE(pygame.sprite.Sprite):
         super().__init__()
         self.numbullets = numbullets
         self.img = pygame.image.load('ammocrate.png')
-        self.img = pygame.transform.scale(self.img, (100,75))
+        #self.img = pygame.transform.scale(self.img, (100,75))
         self.rect = self.img.get_rect()
         self.rect.x = x
         #self.rect.topleft = [x-100,225]
@@ -156,6 +156,9 @@ class Player(pygame.sprite.Sprite):
         self.isjumping = False
         self.position, self.velocity = pygame.math.Vector2(0,0), pygame.math.Vector2(0,0)
         self.accel = pygame.math.Vector2(0,0.35)
+        self.onground = False
+        self.tempvel = 0
+        #self.hitbox = pygame.Rect(player.rect.x, player.rect.y)
         #self.position.x = map.start_x
         #self.position.y = map.start_y
     #def checkstuff(self, tiles):
@@ -166,10 +169,14 @@ class Player(pygame.sprite.Sprite):
             if self.rect.colliderect(tile):
                 hits.append(tile)
         return hits
-    def checkCollisionsx(self, tiles):
+    def checkCollisionsy(self, tiles):
+        self.onground = False
+        self.tempvel += 1
+        self.rect.bottom += self.tempvel
         collisions = self.gethits(tiles)
         for tile in collisions:
-            self.rect.x = self.rect.x-50
+            self.tempvel = 0
+            self.rect.bottom = tile.rect.bottom-30#self.rect.h
     def cooldown(self):
         """
         if self.cooldowncount == 10:
@@ -403,6 +410,7 @@ player.currentgunsprite = 0
 player.image = player.gunsprites[player.currentgunsprite]
 
 player.rect = player.image.get_rect()
+player.rect.y += 100
 #player.rect.topleft = [player.rect.x, player.rect.y]
 
 timerevent = pygame.event.custom_type()
@@ -418,11 +426,26 @@ player.ratio=1
 tscrate = ACRATE(5, True, 300)
 
 #booletvel = 10
+"""
+player.rect.w -= 60
+player.rect.y = 50
+player.rect.height -= 50
+"""
+print(player.rect.w)
+print(player.rect.h)
+tscrate.rect.y+=150
+player.rect = player.rect.inflate((-168,-168))
 
 while running:
 
     screen.fill((0,0,0))
 
+    player.image = pygame.transform.scale(player.image,(32,32))
+
+    player.checkCollisionsy(map.tiles)
+
+    r1 = pygame.draw.rect(screen, "red", (player.rect.x,player.rect.y,player.rect.w,player.rect.h))
+    r2 = pygame.draw.rect(screen, "blue", (tscrate.rect.x,tscrate.rect.y,tscrate.rect.w,tscrate.rect.h))
     map.draw_map(screen)
 
     #print(needmoreboolets)
@@ -433,11 +456,15 @@ while running:
         needmoreboolets[1].checks()
 
     if tscrate.isshowing:
-        screen.blit(tscrate.img, (tscrate.rect.x,225))
+        screen.blit(tscrate.img, (tscrate.rect.x,tscrate.rect.y))
     else:
         tscrate = ACRATE(5, True, random.randrange(100, 700, 5))
+        tscrate.rect.y+=150
 
-    if player.rect.x == tscrate.rect.x:
+    if r1.colliderect(r2):
+        print("goat")
+
+    if player.rect.colliderect(tscrate.rect):
         print("Touching")
         bullets.bullets += tscrate.numbullets
         tscrate.isshowing = False
