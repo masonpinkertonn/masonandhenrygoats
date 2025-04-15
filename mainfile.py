@@ -13,6 +13,11 @@ from tiles import *
 
 pygame.font.init()
 
+bg = pygame.image.load('peakbkg.jpg')
+bg = pygame.transform.scale(bg, (1920, 1080))
+pygame.mouse.set_visible(0)
+
+
 txtfont = pygame.font.SysFont("Arial", 30)
 pygame.init()
 SCREEN_WIDTH = 1920
