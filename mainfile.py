@@ -158,6 +158,10 @@ class Player(pygame.sprite.Sprite):
         self.accel = pygame.math.Vector2(0,0.35)
         self.onground = False
         self.tempvel = 0
+        self.isposvel = 0
+        self.y_gravity = 1
+        self.jump_height = 20
+        self.y_vel = self.jump_height
         #self.hitbox = pygame.Rect(player.rect.x, player.rect.y)
         #self.position.x = map.start_x
         #self.position.y = map.start_y
@@ -169,6 +173,25 @@ class Player(pygame.sprite.Sprite):
             if self.rect.colliderect(tile):
                 hits.append(tile)
         return hits
+    def checkCollisionsx(self, tiles):
+        collisions = self.gethits(tiles)
+        for tile in collisions:
+            dr = abs(self.rect.right - tile.rect.left)
+            dl = abs(self.rect.left - tile.rect.right)
+            db = abs(self.rect.bottom - tile.rect.top)
+            dt = abs(self.rect.top - tile.rect.bottom)
+            collision_side = ""
+            min_dist = min(dr, dl, db, dt)
+
+            if min_dist == dr:
+                collision_side = "right"
+            elif min_dist == dl:
+                collision_side = "left"
+
+            if collision_side == "right":
+                self.rect.x = tile.rect.left - self.rect.w
+            elif collision_side == "left":
+                self.rect.x = tile.rect.right
     def checkCollisionsy(self, tiles):
         self.onground = False
         self.tempvel += 1
@@ -235,14 +258,22 @@ class Player(pygame.sprite.Sprite):
                 self.ispunching = False
                 self.currenthurtsprite = 0
     def changex(self, xval):
+        if xval < 0:
+            self.isposvel = -1
+        elif xval > 0:
+            self.isposvel = 1
+        else:
+            self.isposvel = 0
         self.rect.x+=xval
+        print(self.isposvel)
         #self.rect.topleft = [self.rect.x, self.y]
     def changey(self):
-        self.rect.y -= y_vel
-        y_vel -= y_gravity
-        if y_vel < -jump_height:
+        self.rect.y -= self.y_vel
+        self.y_vel -= self.y_gravity
+        if self.y_vel < -self.jump_height:
             self.isjumping = False
-            y_vel = jump_height
+            self.y_vel = self.jump_height
+            self.onground = False
         return self.isjumping
     def die(self):
 
@@ -297,10 +328,6 @@ jumpheight *= 2
 
 running = True
 clock = pygame.time.Clock()
-
-y_gravity = 1
-jump_height = 20
-y_vel = jump_height
 
 movingsprites = pygame.sprite.Group()
 player = Player(x,y)
@@ -442,7 +469,10 @@ while running:
 
     player.image = pygame.transform.scale(player.image,(32,32))
 
+    player.checkCollisionsx(map.tiles)
     player.checkCollisionsy(map.tiles)
+
+    player.isposvel = 0
 
     r1 = pygame.draw.rect(screen, "red", (player.rect.x,player.rect.y,player.rect.w,player.rect.h))
     r2 = pygame.draw.rect(screen, "blue", (tscrate.rect.x,tscrate.rect.y,tscrate.rect.w,tscrate.rect.h))
@@ -525,11 +555,7 @@ while running:
     if player.isjumping:
         #screen.fill((0,0,0))
         player.jumpdate()
-        player.rect.y -= y_vel
-        y_vel -= y_gravity
-        if y_vel < -jump_height:
-            player.isjumping = False
-            y_vel = jump_height
+        player.changey()
     if player.ispunching:
         player.gunman()
         #pygame.draw.circle(screen, "pink", (player.rect.x+125,player.rect.y+125), 20)
