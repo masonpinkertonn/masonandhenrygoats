@@ -267,13 +267,29 @@ class Player(pygame.sprite.Sprite):
         self.rect.x+=xval
         print(self.isposvel)
         #self.rect.topleft = [self.rect.x, self.y]
-    def changey(self):
+    def changey(self, tiles):
         self.rect.y -= self.y_vel
         self.y_vel -= self.y_gravity
-        if self.y_vel < -self.jump_height:
-            self.isjumping = False
-            self.y_vel = self.jump_height
-            self.onground = False
+        collisions = self.gethits(tiles)
+        for tile in collisions:
+            dr = abs(self.rect.right - tile.rect.left)
+            dl = abs(self.rect.left - tile.rect.right)
+            db = abs(self.rect.bottom - tile.rect.top)
+            dt = abs(self.rect.top - tile.rect.bottom)
+            collision_side = ""
+            min_dist = min(dr, dl, db, dt)
+
+            if min_dist == dr:
+                collision_side = "right"
+            elif min_dist == dl:
+                collision_side = "left"
+            elif min_dist == dt:
+                collision_side = "top"
+            if collision_side == "top":
+                self.isjumping = False
+                self.y_vel = self.jump_height
+                self.onground = False
+        
         return self.isjumping
     def die(self):
 
@@ -470,7 +486,7 @@ while running:
     player.image = pygame.transform.scale(player.image,(32,32))
 
     player.checkCollisionsx(map.tiles)
-    player.checkCollisionsy(map.tiles)
+    #player.checkCollisionsy(map.tiles)
 
     player.isposvel = 0
 
@@ -555,7 +571,7 @@ while running:
     if player.isjumping:
         #screen.fill((0,0,0))
         player.jumpdate()
-        player.changey()
+        player.changey(map.tiles)
     if player.ispunching:
         player.gunman()
         #pygame.draw.circle(screen, "pink", (player.rect.x+125,player.rect.y+125), 20)
