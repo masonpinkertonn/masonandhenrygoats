@@ -485,8 +485,9 @@ tscrate.rect.y+=150
 player.rect = player.rect.inflate((-168,-168))
 
 while running:
-
+    
     screen.fill((0,0,0))
+    screen.blit(bg, (0, 0))
 
     player.image = pygame.transform.scale(player.image,(32,32))
 
