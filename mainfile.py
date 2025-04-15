@@ -288,12 +288,18 @@ class Player(pygame.sprite.Sprite):
                 collision_side = "right"
             elif min_dist == dl:
                 collision_side = "left"
-            elif min_dist == dt:
+            elif min_dist == db:
                 collision_side = "top"
+            elif min_dist == dt:
+                collision_side = "bottom"
             if collision_side == "top":
+                print("bottom")
+                self.rect.bottom = tile.rect.top
                 self.isjumping = False
                 self.y_vel = self.jump_height
                 self.onground = False
+            elif collision_side == "bottom":
+                self.rect.bottom = tile.rect.bottom + self.rect.h
         
         return self.isjumping
     def die(self):
