@@ -13,7 +13,7 @@ from tiles import *
 
 pygame.font.init()
 
-bg = pygame.image.load('explore-the-neon-lit-cyberpunk-city-in-this-pixel-art-atwc3enbcz2113ry.jpg')
+bg = pygame.image.load('peakbkg.jpg')
 bg = pygame.transform.scale(bg, (1920, 1080))
 pygame.mouse.set_visible(0)
 
