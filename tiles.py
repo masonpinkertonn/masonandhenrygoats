@@ -20,8 +20,8 @@ class Tilemap():
         self.load_map()
 
 
-    def draw_map(self, surface):
-        surface.blit(self.map_surface, (0, 0))
+    def draw_map(self, surface, cameraX, cameraY):
+        surface.blit(self.map_surface, (cameraX, cameraY))
 
 
     def load_map(self):

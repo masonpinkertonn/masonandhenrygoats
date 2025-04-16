@@ -9,11 +9,11 @@ from spritesheet import Spritesheet
 import csv
 import json
 from tiles import *
-import tralalalero_tralala as tralalalerotralala
 #import pygame_ce
 
 pygame.font.init()
-
+cameraX = 0
+cameraY = 0
 bg = pygame.image.load('peakbkg.jpg')
 bg = pygame.transform.scale(bg, (1920, 1080))
 pygame.mouse.set_visible(0)
@@ -21,10 +21,11 @@ pygame.mouse.set_visible(0)
 
 txtfont = pygame.font.SysFont("Arial", 30)
 pygame.init()
-SCREEN_WIDTH = 1920
-SCREEN_HEIGHT = 1080
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 720
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+# screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
 # Do spritesheet for idle animation to maintain player size
 """
 class Monster(pygame.sprite.Sprite):
@@ -43,7 +44,9 @@ ourspritesheet = Spritesheet('industrybaby.png')
 player_img = ourspritesheet.parse_sprite('Biker_idle.png')
 player_rect = player_img.get_rect()
 
-map = Tilemap('industrial_map_ground.csv', ourspritesheet)
+map = Tilemap('testmap.csv', ourspritesheet)
+# map = Tilemap('mainmap_Terrain.csv', ourspritesheet)
+
 player_rect.x, player_rect.y = map.start_x, map.start_y
 
 class Bullet(pygame.sprite.Sprite):
@@ -168,6 +171,8 @@ class Player(pygame.sprite.Sprite):
         self.y_gravity = 1
         self.jump_height = 20
         self.y_vel = self.jump_height
+        self.rect.x = x
+        self.rect.y = y
         #self.hitbox = pygame.Rect(player.rect.x, player.rect.y)
         #self.position.x = map.start_x
         #self.position.y = map.start_y
@@ -329,8 +334,8 @@ class boolets:
 
 
 
-x = 100
-y = 100
+x = 500
+y = 514
 
 bullets = boolets(0, "Bullets: ", txtfont, (255,255,255), 0, 570)
 
@@ -485,6 +490,9 @@ print(player.rect.h)
 tscrate.rect.y+=150
 player.rect = player.rect.inflate((-168,-168))
 
+player.rect.x = x
+player.rect.y = y
+
 while running:
     
     screen.fill((0,0,0))
@@ -499,7 +507,7 @@ while running:
 
     r1 = pygame.draw.rect(screen, "red", (player.rect.x,player.rect.y,player.rect.w,player.rect.h))
     r2 = pygame.draw.rect(screen, "blue", (tscrate.rect.x,tscrate.rect.y,tscrate.rect.w,tscrate.rect.h))
-    map.draw_map(screen)
+    map.draw_map(screen, cameraX, cameraY)
 
     #print(needmoreboolets)
 
@@ -534,6 +542,11 @@ while running:
 
     key = pygame.key.get_pressed()
     screen.blit(player.image, (player.rect.x, player.rect.y))
+    
+    if player.rect.x > SCREEN_WIDTH /4 *3:
+        cameraX -= 5
+    elif player.rect.x < SCREEN_WIDTH / 6:
+        cameraX += 5
     #movingsprites.draw(screen)
 
     for event in pygame.event.get():
