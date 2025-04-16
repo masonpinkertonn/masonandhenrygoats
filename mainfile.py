@@ -9,6 +9,7 @@ from spritesheet import Spritesheet
 import csv
 import json
 from tiles import *
+import tralalalero_tralala as tralalalerotralala
 #import pygame_ce
 
 pygame.font.init()
