@@ -14,14 +14,14 @@ from tiles import *
 pygame.font.init()
 
 bg = pygame.image.load('peakbkg.jpg')
-bg = pygame.transform.scale(bg, (1920, 1080))
+bg = pygame.transform.scale(bg, (600, 600))
 pygame.mouse.set_visible(0)
 
 
 txtfont = pygame.font.SysFont("Arial", 30)
 pygame.init()
-SCREEN_WIDTH = 1920
-SCREEN_HEIGHT = 1080
+SCREEN_WIDTH = 600
+SCREEN_HEIGHT = 600
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 # Do spritesheet for idle animation to maintain player size
@@ -165,46 +165,45 @@ class Player(pygame.sprite.Sprite):
         self.tempvel = 0
         self.isposvel = 0
         self.y_gravity = 1
+        self.frict = -0.12
         self.jump_height = 20
         self.y_vel = self.jump_height
+        self.isposyvel = 0
         #self.hitbox = pygame.Rect(player.rect.x, player.rect.y)
         #self.position.x = map.start_x
         #self.position.y = map.start_y
     #def checkstuff(self, tiles):
         #self.
-    def gethits(self, tiles):
-        hits = []
+    def checkhits(self, tiles):
+        hitlist = []
         for tile in tiles:
             if self.rect.colliderect(tile):
-                hits.append(tile)
-        return hits
-    def checkCollisionsx(self, tiles):
-        collisions = self.gethits(tiles)
-        for tile in collisions:
-            dr = abs(self.rect.right - tile.rect.left)
-            dl = abs(self.rect.left - tile.rect.right)
-            db = abs(self.rect.bottom - tile.rect.top)
-            dt = abs(self.rect.top - tile.rect.bottom)
-            collision_side = ""
-            min_dist = min(dr, dl, db, dt)
-
-            if min_dist == dr:
-                collision_side = "right"
-            elif min_dist == dl:
-                collision_side = "left"
-
-            if collision_side == "right":
-                self.rect.x = tile.rect.left - self.rect.w
-            elif collision_side == "left":
-                self.rect.x = tile.rect.right
-    def checkCollisionsy(self, tiles):
+                hitlist.append(tile)
+        return hitlist
+    def checkcolx(self, tiles):
+        col = self.checkhits(tiles)
+        for tile in col:
+            if player.isposvel == 1:
+                self.rect.right = tile.rect.left
+            elif player.isposvel == -1:
+                self.rect.left = tile.rect.right
+            self.isposvel = 0
+    def checkcoly(self, tiles):
         self.onground = False
-        self.tempvel += 1
-        self.rect.bottom += self.tempvel
-        collisions = self.gethits(tiles)
-        for tile in collisions:
-            self.tempvel = 0
-            self.rect.bottom = tile.rect.bottom-30#self.rect.h
+        self.rect.bottom += 1
+        col = self.checkhits(tiles)
+        for tile in col:
+            if self.isposyvel < 0:
+                print("collide")
+                self.onground = True
+                self.isjumping = False
+                self.y_vel = 20
+                self.rect.bottom = tile.rect.top
+            elif self.isposyvel > 0:
+                self.y_vel = self.jump_height
+                self.rect.bottom = tile.rect.bottom + self.rect.h
+            else:
+                self.onground = False
     def cooldown(self):
         """
         if self.cooldowncount == 10:
@@ -262,7 +261,8 @@ class Player(pygame.sprite.Sprite):
             if self.currenthurtsprite >= len(self.hurtsprites):
                 self.ispunching = False
                 self.currenthurtsprite = 0
-    def changex(self, xval):
+    def changex(self, xval, tiles):
+        self.checkcolx(tiles)
         if xval < 0:
             self.isposvel = -1
         elif xval > 0:
@@ -272,35 +272,20 @@ class Player(pygame.sprite.Sprite):
         self.rect.x+=xval
         print(self.isposvel)
         #self.rect.topleft = [self.rect.x, self.y]
-    def changey(self, tiles):
+    def changey(self):
+        self.checkcoly(map.tiles)
         self.rect.y -= self.y_vel
         self.y_vel -= self.y_gravity
-        collisions = self.gethits(tiles)
-        for tile in collisions:
-            dr = abs(self.rect.right - tile.rect.left)
-            dl = abs(self.rect.left - tile.rect.right)
-            db = abs(self.rect.bottom - tile.rect.top)
-            dt = abs(self.rect.top - tile.rect.bottom)
-            collision_side = ""
-            min_dist = min(dr, dl, db, dt)
-
-            if min_dist == dr:
-                collision_side = "right"
-            elif min_dist == dl:
-                collision_side = "left"
-            elif min_dist == db:
-                collision_side = "top"
-            elif min_dist == dt:
-                collision_side = "bottom"
-            if collision_side == "top":
-                print("bottom")
-                self.rect.bottom = tile.rect.top
-                self.isjumping = False
-                self.y_vel = self.jump_height
-                self.onground = False
-            elif collision_side == "bottom":
-                self.rect.bottom = tile.rect.bottom + self.rect.h
-        
+        if self.y_vel > 0:
+            self.isposyvel = 1
+        elif self.y_vel < 0:
+            self.isposyvel = -1
+        elif self.y_vel == 0:
+            self.isposyvel = 0
+        if player.onground:
+            player.onground = True
+            self.isjumping = False
+            self.y_vel = self.jump_height
         return self.isjumping
     def die(self):
 
@@ -490,21 +475,37 @@ print(player.rect.h)
 tscrate.rect.y+=150
 player.rect = player.rect.inflate((-168,-168))
 
+tempvel = 0
+
 while running:
     
     screen.fill((0,0,0))
     screen.blit(bg, (0, 0))
 
+    for tile in map.tiles:
+        pygame.draw.rect(screen, "yellow", (tile.rect.x, tile.rect.y, tile.rect.w, tile.rect.h), 1)
+
+    print(player.y_vel)
+
+    if player.rect.y == 332:
+        sys.exit()
+
+    print(player.onground)
+
+    #player.checksss()
+
     player.image = pygame.transform.scale(player.image,(32,32))
 
-    player.checkCollisionsx(map.tiles)
-    #player.checkCollisionsy(map.tiles)
+    player.checkcolx(map.tiles)
+    player.checkcoly(map.tiles)
 
     player.isposvel = 0
 
     r1 = pygame.draw.rect(screen, "red", (player.rect.x,player.rect.y,player.rect.w,player.rect.h))
     r2 = pygame.draw.rect(screen, "blue", (tscrate.rect.x,tscrate.rect.y,tscrate.rect.w,tscrate.rect.h))
     map.draw_map(screen)
+
+    those = [r2]
 
     #print(needmoreboolets)
 
@@ -518,9 +519,6 @@ while running:
     else:
         tscrate = ACRATE(5, True, random.randrange(100, 700, 5))
         tscrate.rect.y+=150
-
-    if r1.colliderect(r2):
-        print("goat")
 
     if player.rect.colliderect(tscrate.rect):
         print("Touching")
@@ -572,18 +570,39 @@ while running:
         #movingsprites = pygame.sprite.Group()
         #movingsprites.add(player)
         #screen.blit(player.image, (player.rect.x, player.rect.y))
-        player.changex(-5)
+        player.changex(-5, map.tiles)
     elif keys[pygame.K_RIGHT]:
         player.update()
         player.goingright = False
-        player.changex(5)
+        player.changex(5, map.tiles)
     else:
         player.idling()
 
     if player.isjumping:
         #screen.fill((0,0,0))
+        #player.onground = False
         player.jumpdate()
-        player.changey(map.tiles)
+        player.changey()
+    elif not(player.onground):
+        player.jumpdate()
+        #player.changey()
+        
+        player.checkcoly(map.tiles)
+        player.rect.y -= tempvel
+        tempvel -= player.y_gravity
+        if tempvel > 0:
+            player.isposyvel = 1
+        elif tempvel < 0:
+            player.isposyvel = -1
+        elif tempvel == 0:
+            player.isposyvel = 0
+        if player.onground:
+            player.onground = True
+            player.isjumping = False
+            tempvel = 0
+        print(player.isposyvel)
+    else:
+        player.onground = True
     if player.ispunching:
         player.gunman()
         #pygame.draw.circle(screen, "pink", (player.rect.x+125,player.rect.y+125), 20)
@@ -600,7 +619,8 @@ while running:
         #player.rect.topleft = [player.rect.x, player.rect.y]
 
     pygame.display.flip()
-    clock.tick(30)
+
+    clock.tick(60)
 
     now = pygame.time.get_ticks()
 
