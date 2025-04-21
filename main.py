@@ -100,10 +100,18 @@ def golemdialogue(currentline):
         lines.append(line)
     dialogue.close()
     try:
-        return (pygame.font.SysFont("Arial", 30).render(lines[currentline], True, (255,255,255)), currentline)
+        if lines[currentline][0] == "-":
+            templine = lines[currentline][1:]
+            return (pygame.font.SysFont("Arial", 30).render(templine, True, (255,255,255)), currentline, "player")
+        else:
+            return (pygame.font.SysFont("Arial", 30).render(lines[currentline], True, (255,255,255)), currentline, "monster")
     except IndexError:
         currentline = 0
-        return (pygame.font.SysFont("Arial", 30).render(lines[currentline], True, (255,255,255)), currentline)
+        if lines[currentline][0] == "-":
+            templine = lines[currentline][1:]
+            return (pygame.font.SysFont("Arial", 30).render(templine, True, (255,255,255)), currentline, "player")
+        else:
+            return (pygame.font.SysFont("Arial", 30).render(lines[currentline], True, (255,255,255)), currentline, "monster")
 
 running = True
 clock = pygame.time.Clock()
@@ -136,84 +144,111 @@ def docollisions():
     elif player.goingright:
         player.rect.right = golem.rect.left#+1
 
+gamestate = "main"
+
 while running:
-    screen.fill((0,0,0))
+    if gamestate == "main":
+        screen.fill((0,0,0))
 
-    pygame.draw.rect(screen, (255,255,255), (player.rect.x, player.rect.y, player.rect.w, player.rect.h))
+        #pygame.draw.rect(screen, (255,255,255), (player.rect.x, player.rect.y, player.rect.w, player.rect.h))
 
-    x = golemdialogue(dialogueline)
+        x = golemdialogue(dialogueline)
 
-    dialogueline = x[1]
+        dialogueline = x[1]
 
-    screen.blit(player.image, (player.rect.x, player.rect.y))
+        screen.blit(player.image, (player.rect.x, player.rect.y))
 
-    if player.rect.x >= SCREEN_WIDTH-305:
-        player.rect.x = SCREEN_WIDTH-305
-    if player.rect.x <= 0:
-        player.rect.x = 0
-    if player.rect.y <= 0:
-        player.rect.y = 0
-    if player.rect.y >= SCREEN_HEIGHT-185:
-        player.rect.y = SCREEN_HEIGHT-185
+        if player.rect.x >= SCREEN_WIDTH-305:
+            player.rect.x = SCREEN_WIDTH-305
+        if player.rect.x <= 0:
+            player.rect.x = 0
+        if player.rect.y <= 0:
+            player.rect.y = 0
+        if player.rect.y >= SCREEN_HEIGHT-185:
+            player.rect.y = SCREEN_HEIGHT-185
 
-    golem.idleanimation()
+        golem.idleanimation()
 
-    screen.blit(golem.image, (golem.rect.x, golem.rect.y))
+        screen.blit(golem.image, (golem.rect.x, golem.rect.y))
 
-    expansion = player.rect.inflate(50,50)
+        expansion = player.rect.inflate(50,50)
 
-    if expansion.colliderect(golem.rect):
-        screen.blit(e_button.image, (golem.rect.x+50,golem.rect.y-60))
-        screen.blit(x[0], (600,600))
-        e_button.isshowing = True
-    else:
-        e_button.isshowing = False
-        dialogueline = 0
+        if expansion.colliderect(golem.rect):
+            screen.blit(e_button.image, (golem.rect.x+50,golem.rect.y-60))
+            if x[2] == "monster":
+                screen.blit(x[0], (golem.rect.x+100,golem.rect.y-20))
+            elif x[2] == "player":
+                screen.blit(x[0], (player.rect.x,player.rect.y))
+            e_button.isshowing = True
+        else:
+            e_button.isshowing = False
+            dialogueline = 0
 
-    if player.rect.colliderect(golem.rect):
-        docollisions()
+        if player.rect.colliderect(golem.rect):
+            docollisions()
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.KEYUP:
-            player.ismoving = False
-            player.goingup = False
-            player.goingdown = False
-            player.goingleft = False
-            player.goingright = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                break
+            if event.type == pygame.KEYUP:
+                player.ismoving = False
+                player.goingup = False
+                player.goingdown = False
+                player.goingleft = False
+                player.goingright = False
 
-    key = pygame.key.get_pressed()
-    
-    if key[pygame.K_UP]:
-        player.goingup = True
-        player.rect.y -= 5
-        player.movement()
-    elif key[pygame.K_DOWN]:
-        player.goingdown = True
-        player.rect.y += 5
-        player.movement()
-    elif key[pygame.K_LEFT]:
-        player.goingleft = True
-        player.rect.x -= 5
-        player.isleft = True
-        player.movement()
-    elif key[pygame.K_RIGHT]:
-        player.goingright = True
-        player.rect.x += 5
-        player.isleft = False
-        player.movement()
-    if not(player.ismoving):
-        player.idleanimation()
-    if key[pygame.K_e] and e_button.isshowing:
-        if now - last >= 1500:
-            last = pygame.time.get_ticks()
-            dialogueline += 1
+        key = pygame.key.get_pressed()
+        
+        if key[pygame.K_UP]:
+            player.goingup = True
+            player.rect.y -= 5
+            player.movement()
+        elif key[pygame.K_DOWN]:
+            player.goingdown = True
+            player.rect.y += 5
+            player.movement()
+        elif key[pygame.K_LEFT]:
+            player.goingleft = True
+            player.rect.x -= 5
+            player.isleft = True
+            player.movement()
+        elif key[pygame.K_RIGHT]:
+            player.goingright = True
+            player.rect.x += 5
+            player.isleft = False
+            player.movement()
+        if not(player.ismoving):
+            player.idleanimation()
+        if key[pygame.K_e] and e_button.isshowing:
+            if now - last >= 1500:
+                last = pygame.time.get_ticks()
+                #gamestate = "fight"
+                #continue
+                dialogueline += 1
 
-    pygame.display.flip()
+        pygame.display.flip()
 
-    clock.tick(60)
+        clock.tick(60)
 
-    now = pygame.time.get_ticks()
+        now = pygame.time.get_ticks()
+
+    elif gamestate == "fight":
+        screen.fill("red")
+
+        if now - last >= 3000:
+            gamestate = "main"
+            continue
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                break
+        
+        pygame.display.flip()
+
+        clock.tick(60)
+
+        now = pygame.time.get_ticks()
 
 pygame.quit()
