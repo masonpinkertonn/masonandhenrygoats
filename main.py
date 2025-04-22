@@ -1,12 +1,17 @@
+global ischange
+
 import pygame
+import random
 
 pygame.init()
 pygame.font.init()
 
-SCREEN_WIDTH = 1920
-SCREEN_HEIGHT = 600
+compinf = pygame.display.Info()
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+SCREEN_WIDTH = compinf.current_w
+SCREEN_HEIGHT = compinf.current_h
+
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
 
 class hitbutton:
     def __init__(self, color, x, y, width, height):
@@ -152,21 +157,22 @@ def docollisions():
     elif player.goingright:
         player.rect.right = golem.rect.left#+1
 
-gamestate = "main"
+gamestate = "defend"
 
 fightbutton = pygame.image.load('FIGHTBUTTON.png')
 fightbuttonrect = fightbutton.get_rect()
 
-rollx = 20
-tempx = 20
+rollx = SCREEN_WIDTH/2-275
+my_y = SCREEN_HEIGHT/2-50
+tempx = SCREEN_WIDTH/2-275
 linegoinleft = False
 linestopped = False
 
-hb1 = hitbutton("red", rollx, 100, 150, 100)
-hb2 = hitbutton("yellow", rollx+150, 100, 100, 100)
-hb3 = hitbutton("green", rollx+250, 100, 50, 100)
-hb4 = hitbutton("yellow", rollx+300, 100, 100, 100)
-hb5 = hitbutton("red", rollx+400, 100, 150, 100)
+hb1 = hitbutton("red", rollx, my_y, 150, 100)
+hb2 = hitbutton("yellow", rollx+150, my_y, 100, 100)
+hb3 = hitbutton("green", rollx+250, my_y, 50, 100)
+hb4 = hitbutton("yellow", rollx+300, my_y, 100, 100)
+hb5 = hitbutton("red", rollx+400, my_y, 150, 100)
 
 hbrects = [hb1, hb2, hb3, hb4, hb5]
 
@@ -174,13 +180,36 @@ class Heart(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = pygame.image.load('Undertale.png')
-        self.image = pygame.transform.scale(self.image, (50,50))
+        self.image = pygame.transform.scale(self.image, (25,25))
         self.rect = self.image.get_rect()
+        self.rect.center = [SCREEN_WIDTH/2,SCREEN_HEIGHT/2]
+    def checks(self):
+        if self.rect.left <= SCREEN_WIDTH/2-150:
+            self.rect.left = SCREEN_WIDTH/2-150
+        if self.rect.right >= SCREEN_WIDTH/2+150:
+            self.rect.right = SCREEN_WIDTH/2+150
+        if self.rect.top <= SCREEN_HEIGHT/2-150:
+            self.rect.top = SCREEN_HEIGHT/2-150
+        if self.rect.bottom >= SCREEN_HEIGHT/2+150:
+            self.rect.bottom = SCREEN_HEIGHT/2+150
+
+leftmostbox = SCREEN_WIDTH/2-150
+rightmostbox = SCREEN_WIDTH/2+150
+
+ischange = False
 
 class Weapon:
     def __init__(self, image):
         self.image = pygame.image.load(image)
+        self.image = pygame.transform.scale(self.image, (105,37.5))
         self.rect = self.image.get_rect()
+        self.rect.x = leftmostbox-100
+        self.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-150),int(SCREEN_HEIGHT/2+150))
+    def move(self,vel):
+        self.rect.x += vel
+        if self.rect.right >= rightmostbox+100:
+            self.rect.x = leftmostbox-100
+            self.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-150),int(SCREEN_HEIGHT/2+150))
 
 utheart = Heart()
 
@@ -198,14 +227,14 @@ while running:
 
         screen.blit(player.image, (player.rect.x, player.rect.y))
 
-        if player.rect.x >= SCREEN_WIDTH-305:
-            player.rect.x = SCREEN_WIDTH-305
+        if player.rect.right >= SCREEN_WIDTH:
+            player.rect.right = SCREEN_WIDTH
         if player.rect.x <= 0:
             player.rect.x = 0
         if player.rect.y <= 0:
             player.rect.y = 0
-        if player.rect.y >= SCREEN_HEIGHT-185:
-            player.rect.y = SCREEN_HEIGHT-185
+        if player.rect.bottom >= SCREEN_HEIGHT:
+            player.rect.bottom = SCREEN_HEIGHT
 
         golem.idleanimation()
 
@@ -307,6 +336,8 @@ while running:
     elif gamestate == "attack":
         screen.fill((0,0,0))
 
+        print(gamestate)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -322,8 +353,10 @@ while running:
                     hploss = 10
                 elif thiscolor == "green":
                     hploss = 15
-                gamestate = "defend"
+                print("ok")
                 last = pygame.time.get_ticks()
+                linestopped = False
+                gamestate = "defend"
                 continue
                 
         pygame.draw.rect(screen, hb1.color, (hb1.x, hb1.y, hb1.width, hb1.height))
@@ -331,10 +364,10 @@ while running:
         pygame.draw.rect(screen, hb3.color, (hb3.x, hb3.y, hb3.width, hb3.height))
         pygame.draw.rect(screen, hb4.color, (hb4.x, hb4.y, hb4.width, hb4.height))
         pygame.draw.rect(screen, hb5.color, (hb5.x, hb5.y, hb5.width, hb5.height))
-        pygame.draw.line(screen, "white", (tempx,80), (tempx,220), 3)
-        if tempx == 570 and not(linestopped):
+        pygame.draw.line(screen, "white", (tempx,SCREEN_HEIGHT/2-75), (tempx,SCREEN_HEIGHT/2+75), 3)
+        if tempx == SCREEN_WIDTH/2+275 and not(linestopped):
             linegoinleft = True
-        if tempx == 20 and not(linestopped):
+        if tempx == SCREEN_WIDTH/2-275 and not(linestopped):
             linegoinleft = False
         if linegoinleft and not(linestopped):
             tempx-=5
@@ -348,12 +381,21 @@ while running:
         now = pygame.time.get_ticks()
 
     elif gamestate == "defend":
-        screen.fill((0,0,0))
+        screen.fill((255,255,255))
 
-        #pygame.draw.rect()
+        utheart.checks()
 
-        if now-last >= 4000:
-            screen.blit(golclub.image, (golclub.rect.x,golclub.rect.y))
+        pygame.draw.rect(screen, (0,0,0), (SCREEN_WIDTH/2-150,SCREEN_HEIGHT/2-150,300,300))
+
+        #if now-last >= 1000:
+        screen.blit(golclub.image, (golclub.rect.x,golclub.rect.y))
+        golclub.move(5)
+
+        if utheart.rect.colliderect(golclub.rect):
+            utheart.rect.center = [SCREEN_WIDTH/2, SCREEN_HEIGHT/2]
+            golclub.rect.x = leftmostbox-100
+            gamestate = "attack"
+            continue
 
         screen.blit(utheart.image, (utheart.rect.x, utheart.rect.y))
 
