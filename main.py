@@ -159,7 +159,7 @@ def docollisions():
     elif player.goingright:
         player.rect.right = golem.rect.left#+1
 
-gamestate = "attack"
+gamestate = "main"
 
 fightbutton = pygame.image.load('FIGHTBUTTON.png')
 fightbuttonrect = fightbutton.get_rect()
@@ -395,11 +395,11 @@ while running:
                     if tempx >= i.x and tempx <= (i.x + i.width):
                         thiscolor = i.color
                 if thiscolor == "red":
-                    golem.health -= 2
+                    golem.health -= 1
                 elif thiscolor == "yellow":
-                    golem.health -= 4
+                    golem.health -= 2
                 elif thiscolor == "green":
-                    golem.health -= 6
+                    golem.health -= 3
                 if golem.health <= 0:
                     running = False
                     break
