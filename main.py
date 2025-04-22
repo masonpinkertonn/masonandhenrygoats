@@ -4,9 +4,17 @@ pygame.init()
 pygame.font.init()
 
 SCREEN_WIDTH = 1920
-SCREEN_HEIGHT = 1080
+SCREEN_HEIGHT = 600
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+class hitbutton:
+    def __init__(self, color, x, y, width, height):
+        self.color = color
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -146,6 +154,38 @@ def docollisions():
 
 gamestate = "main"
 
+fightbutton = pygame.image.load('FIGHTBUTTON.png')
+fightbuttonrect = fightbutton.get_rect()
+
+rollx = 20
+tempx = 20
+linegoinleft = False
+linestopped = False
+
+hb1 = hitbutton("red", rollx, 100, 150, 100)
+hb2 = hitbutton("yellow", rollx+150, 100, 100, 100)
+hb3 = hitbutton("green", rollx+250, 100, 50, 100)
+hb4 = hitbutton("yellow", rollx+300, 100, 100, 100)
+hb5 = hitbutton("red", rollx+400, 100, 150, 100)
+
+hbrects = [hb1, hb2, hb3, hb4, hb5]
+
+class Heart(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load('Undertale.png')
+        self.image = pygame.transform.scale(self.image, (50,50))
+        self.rect = self.image.get_rect()
+
+class Weapon:
+    def __init__(self, image):
+        self.image = pygame.image.load(image)
+        self.rect = self.image.get_rect()
+
+utheart = Heart()
+
+golclub = Weapon('golemweapon.png')
+
 while running:
     if gamestate == "main":
         screen.fill((0,0,0))
@@ -223,8 +263,10 @@ while running:
         if key[pygame.K_e] and e_button.isshowing:
             if now - last >= 1500:
                 last = pygame.time.get_ticks()
-                #gamestate = "fight"
-                #continue
+                if dialogueline == 5:
+                    dialogueline = 0
+                    gamestate = "fight"
+                    continue
                 dialogueline += 1
 
         pygame.display.flip()
@@ -236,14 +278,99 @@ while running:
     elif gamestate == "fight":
         screen.fill("red")
 
+        screen.blit(fightbutton, (100,100))
+
+        fightbuttonrect.x = 100
+        fightbuttonrect.y = 100
+
         if now - last >= 3000:
             gamestate = "main"
             continue
+        
+        mouse = pygame.mouse.get_pos()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
                 break
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if fightbuttonrect.collidepoint(mouse):
+                    gamestate = "attack"
+                    continue
+        
+        pygame.display.flip()
+
+        clock.tick(60)
+
+        now = pygame.time.get_ticks()
+
+    elif gamestate == "attack":
+        screen.fill((0,0,0))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                break
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                linestopped = True
+                for i in hbrects:
+                    if tempx >= i.x and tempx <= (i.x + i.width):
+                        thiscolor = i.color
+                if thiscolor == "red":
+                    hploss = 5
+                elif thiscolor == "yellow":
+                    hploss = 10
+                elif thiscolor == "green":
+                    hploss = 15
+                gamestate = "defend"
+                continue
+                
+        pygame.draw.rect(screen, hb1.color, (hb1.x, hb1.y, hb1.width, hb1.height))
+        pygame.draw.rect(screen, hb2.color, (hb2.x, hb2.y, hb2.width, hb2.height))
+        pygame.draw.rect(screen, hb3.color, (hb3.x, hb3.y, hb3.width, hb3.height))
+        pygame.draw.rect(screen, hb4.color, (hb4.x, hb4.y, hb4.width, hb4.height))
+        pygame.draw.rect(screen, hb5.color, (hb5.x, hb5.y, hb5.width, hb5.height))
+        pygame.draw.line(screen, "white", (tempx,80), (tempx,220), 3)
+        if tempx == 570 and not(linestopped):
+            linegoinleft = True
+        if tempx == 20 and not(linestopped):
+            linegoinleft = False
+        if linegoinleft and not(linestopped):
+            tempx-=5
+        elif not(linegoinleft) and not(linestopped):
+            tempx+=5
+
+        pygame.display.flip()
+
+        clock.tick(60)
+
+        now = pygame.time.get_ticks()
+
+    elif gamestate == "defend":
+        screen.fill((0,0,0))
+
+        #pygame.draw.rect()
+
+        if now-last >= 4000:
+            screen.blit(golclub.image, (golclub.rect.x,golclub.rect.y))
+
+        screen.blit(utheart.image, (utheart.rect.x, utheart.rect.y))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                break
+
+        key = pygame.key.get_pressed()
+        
+        if key[pygame.K_UP]:
+            utheart.rect.y -= 5
+        elif key[pygame.K_DOWN]:
+            utheart.rect.y += 5
+        elif key[pygame.K_LEFT]:
+            utheart.rect.x -= 5
+        elif key[pygame.K_RIGHT]:
+            utheart.rect.x += 5
         
         pygame.display.flip()
 
