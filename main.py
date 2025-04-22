@@ -24,6 +24,7 @@ class hitbutton:
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
+        self.health = 20
         self.goingup = False
         self.goingdown = False
         self.goingleft = False
@@ -83,6 +84,7 @@ class Player(pygame.sprite.Sprite):
 class Golem(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
+        self.health = 15
         self.sprites = []
         names = []
         for i in range(10):
@@ -157,7 +159,7 @@ def docollisions():
     elif player.goingright:
         player.rect.right = golem.rect.left#+1
 
-gamestate = "defend"
+gamestate = "attack"
 
 fightbutton = pygame.image.load('FIGHTBUTTON.png')
 fightbuttonrect = fightbutton.get_rect()
@@ -195,25 +197,64 @@ class Heart(pygame.sprite.Sprite):
 
 leftmostbox = SCREEN_WIDTH/2-150
 rightmostbox = SCREEN_WIDTH/2+150
+upmostbox = SCREEN_HEIGHT/2-150
+downmostbox = SCREEN_HEIGHT/2+150
 
 ischange = False
 
 class Weapon:
     def __init__(self, image):
         self.image = pygame.image.load(image)
-        self.image = pygame.transform.scale(self.image, (105,37.5))
+        self.image = pygame.transform.scale(self.image, (85,37.5))
         self.rect = self.image.get_rect()
-        self.rect.x = leftmostbox-100
-        self.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-150),int(SCREEN_HEIGHT/2+150))
+        self.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
     def move(self,vel):
         self.rect.x += vel
-        if self.rect.right >= rightmostbox+100:
-            self.rect.x = leftmostbox-100
-            self.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-150),int(SCREEN_HEIGHT/2+150))
 
+class VertWeapon:
+    def __init__(self,image):
+        self.image = pygame.image.load(image)
+        self.image = pygame.transform.scale(self.image, (85,37.5))
+        self.image = pygame.transform.rotate(self.image, 270)
+        self.rect = self.image.get_rect()
+        self.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+    def move(self, vel):
+        self.rect.y += vel
 utheart = Heart()
 
 golclub = Weapon('golemweapon.png')
+golclub.rect.left = leftmostbox-200
+golclub2 = Weapon('golemweapon.png')
+golclub2.image = pygame.transform.rotate(golclub2.image, 180)
+golclub2.rect.right = rightmostbox+200
+golclub3 = VertWeapon('golemweapon.png')
+golclub3.rect.top = upmostbox-200
+golclub4 = VertWeapon('golemweapon.png')
+golclub4.image = pygame.transform.rotate(golclub4.image, 180)
+golclub4.rect.bottom = downmostbox+200
+
+round = 0
+
+class HealthBar:
+    def __init__(self):
+        self.currenthealth = player.health
+    def drawit(self):
+        pygame.draw.rect(screen, "red", (0,0,300,75))
+        pygame.draw.rect(screen, "green", (0,0,15*self.currenthealth,75))
+    def upd(self):
+        self.currenthealth = player.health
+
+class MonsterHB:
+    def __init__(self):
+        self.currenthealth = golem.health
+    def drawit(self):
+        pygame.draw.rect(screen, "red", (SCREEN_WIDTH-300,0,300,75))
+        pygame.draw.rect(screen, "green", (SCREEN_WIDTH-300,0,(300/15)*self.currenthealth,75))
+    def upd(self):
+        self.currenthealth = golem.health
+
+tshb = HealthBar()
+monstahb = MonsterHB()
 
 while running:
     if gamestate == "main":
@@ -336,7 +377,13 @@ while running:
     elif gamestate == "attack":
         screen.fill((0,0,0))
 
-        print(gamestate)
+        tshb.upd()
+        tshb.drawit()
+
+        monstahb.upd()
+        monstahb.drawit()
+
+        #print(gamestate)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -348,15 +395,20 @@ while running:
                     if tempx >= i.x and tempx <= (i.x + i.width):
                         thiscolor = i.color
                 if thiscolor == "red":
-                    hploss = 5
+                    golem.health -= 2
                 elif thiscolor == "yellow":
-                    hploss = 10
+                    golem.health -= 4
                 elif thiscolor == "green":
-                    hploss = 15
-                print("ok")
+                    golem.health -= 6
+                if golem.health <= 0:
+                    running = False
+                    break
+                #print("ok")
                 last = pygame.time.get_ticks()
                 linestopped = False
                 gamestate = "defend"
+                newlast = pygame.time.get_ticks()
+                round += 1
                 continue
                 
         pygame.draw.rect(screen, hb1.color, (hb1.x, hb1.y, hb1.width, hb1.height))
@@ -383,19 +435,70 @@ while running:
     elif gamestate == "defend":
         screen.fill((255,255,255))
 
+        tshb.upd()
+        tshb.drawit()
+
+        monstahb.upd()
+        monstahb.drawit()
+
         utheart.checks()
 
         pygame.draw.rect(screen, (0,0,0), (SCREEN_WIDTH/2-150,SCREEN_HEIGHT/2-150,300,300))
 
-        #if now-last >= 1000:
-        screen.blit(golclub.image, (golclub.rect.x,golclub.rect.y))
-        golclub.move(5)
-
-        if utheart.rect.colliderect(golclub.rect):
+        if now-newlast >= 11500:
             utheart.rect.center = [SCREEN_WIDTH/2, SCREEN_HEIGHT/2]
-            golclub.rect.x = leftmostbox-100
+            golclub.rect.left = leftmostbox-200
+            golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+            golclub2.rect.right = rightmostbox+200
+            golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+            golclub3.rect.top = upmostbox-200
+            golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+            golclub4.rect.bottom = downmostbox+200
+            golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
             gamestate = "attack"
             continue
+
+        if now-last >= 1500:
+            screen.blit(golclub.image, (golclub.rect.x,golclub.rect.y))
+            golclub.move(5)
+            if round >= 2:
+                screen.blit(golclub2.image, (golclub2.rect.x,golclub2.rect.y))
+                golclub2.move(-5)
+            if round >= 3:
+                screen.blit(golclub3.image, (golclub3.rect.x,golclub3.rect.y))
+                golclub3.move(5)
+            if round >= 4:
+                screen.blit(golclub4.image, (golclub4.rect.x,golclub4.rect.y))
+                golclub4.move(-5)
+            if utheart.rect.colliderect(golclub.rect) or utheart.rect.colliderect(golclub2.rect) or utheart.rect.colliderect(golclub3.rect) or utheart.rect.colliderect(golclub4.rect):
+                player.health -= 1
+                if player.health == 0:
+                    running = False
+                    break
+                golclub.rect.left = leftmostbox-200
+                golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+                golclub2.rect.right = rightmostbox+200
+                golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+                golclub3.rect.top = upmostbox-200
+                golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+                golclub4.rect.bottom = downmostbox+200
+                golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+
+        if golclub.rect.right >= rightmostbox+200:
+            golclub.rect.left = leftmostbox-200
+            golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+
+        if golclub2.rect.left <= leftmostbox-200:
+            golclub2.rect.right = rightmostbox+200
+            golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+
+        if golclub3.rect.bottom >= downmostbox+200:
+            golclub3.rect.top = upmostbox-200
+            golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+
+        if golclub4.rect.top <= upmostbox-200:
+            golclub4.rect.bottom = downmostbox+200
+            golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
 
         screen.blit(utheart.image, (utheart.rect.x, utheart.rect.y))
 
@@ -407,13 +510,13 @@ while running:
         key = pygame.key.get_pressed()
         
         if key[pygame.K_UP]:
-            utheart.rect.y -= 5
+            utheart.rect.y -= 6
         elif key[pygame.K_DOWN]:
-            utheart.rect.y += 5
+            utheart.rect.y += 6
         elif key[pygame.K_LEFT]:
-            utheart.rect.x -= 5
+            utheart.rect.x -= 6
         elif key[pygame.K_RIGHT]:
-            utheart.rect.x += 5
+            utheart.rect.x += 6
         
         pygame.display.flip()
 
