@@ -323,6 +323,7 @@ while running:
                 elif thiscolor == "green":
                     hploss = 15
                 gamestate = "defend"
+                last = pygame.time.get_ticks()
                 continue
                 
         pygame.draw.rect(screen, hb1.color, (hb1.x, hb1.y, hb1.width, hb1.height))
