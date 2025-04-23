@@ -25,6 +25,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.health = 20
+        self.isgolemdefeated = False
         self.goingup = False
         self.goingdown = False
         self.goingleft = False
@@ -161,8 +162,20 @@ def docollisions():
 
 gamestate = "main"
 
-fightbutton = pygame.image.load('FIGHTBUTTON.png')
-fightbuttonrect = fightbutton.get_rect()
+class BIGBUTTTON:
+    def __init__(self,image):
+        self.image = pygame.image.load(image)
+        self.image = pygame.transform.scale(self.image, (373.8, 133))
+        self.rect = self.image.get_rect()
+
+
+fightbutton = BIGBUTTTON('FIGHTBUTTON.png')
+
+actbutton = BIGBUTTTON('ACTBUTTON.png')
+
+itembutton = BIGBUTTTON('TRUE.jpg')
+
+mercbutton = BIGBUTTTON('MERCBEAST.jpg')
 
 rollx = SCREEN_WIDTH/2-275
 my_y = SCREEN_HEIGHT/2-50
@@ -262,9 +275,11 @@ while running:
 
         #pygame.draw.rect(screen, (255,255,255), (player.rect.x, player.rect.y, player.rect.w, player.rect.h))
 
-        x = golemdialogue(dialogueline)
+        if not(player.isgolemdefeated):
 
-        dialogueline = x[1]
+            x = golemdialogue(dialogueline)
+
+            dialogueline = x[1]
 
         screen.blit(player.image, (player.rect.x, player.rect.y))
 
@@ -277,25 +292,31 @@ while running:
         if player.rect.bottom >= SCREEN_HEIGHT:
             player.rect.bottom = SCREEN_HEIGHT
 
-        golem.idleanimation()
+        if not(player.isgolemdefeated):
 
-        screen.blit(golem.image, (golem.rect.x, golem.rect.y))
+            golem.idleanimation()
 
-        expansion = player.rect.inflate(50,50)
+            screen.blit(golem.image, (golem.rect.x, golem.rect.y))
 
-        if expansion.colliderect(golem.rect):
-            screen.blit(e_button.image, (golem.rect.x+50,golem.rect.y-60))
-            if x[2] == "monster":
-                screen.blit(x[0], (golem.rect.x+100,golem.rect.y-20))
-            elif x[2] == "player":
-                screen.blit(x[0], (player.rect.x,player.rect.y))
-            e_button.isshowing = True
-        else:
-            e_button.isshowing = False
-            dialogueline = 0
+            expansion = player.rect.inflate(50,50)
 
-        if player.rect.colliderect(golem.rect):
-            docollisions()
+            if expansion.colliderect(golem.rect):
+                screen.blit(e_button.image, (golem.rect.x+50,golem.rect.y-60))
+                if x[2] == "monster":
+                    pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
+                    pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-290,SCREEN_HEIGHT-240,580,180))
+                    screen.blit(x[0], (SCREEN_WIDTH/2-280,SCREEN_HEIGHT-230))
+                elif x[2] == "player":
+                    pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
+                    pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-290,SCREEN_HEIGHT-240,580,180))
+                    screen.blit(x[0], (SCREEN_WIDTH/2-280,SCREEN_HEIGHT-230))
+                e_button.isshowing = True
+            else:
+                e_button.isshowing = False
+                dialogueline = 0
+
+            if player.rect.colliderect(golem.rect):
+                docollisions()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -348,14 +369,31 @@ while running:
     elif gamestate == "fight":
         screen.fill("red")
 
-        screen.blit(fightbutton, (100,100))
+        golem.idleanimation()
 
-        fightbuttonrect.x = 100
-        fightbuttonrect.y = 100
+        golem.fakex = SCREEN_WIDTH/2-100
+        golem.fakey = 200
 
-        if now - last >= 3000:
-            gamestate = "main"
-            continue
+        screen.blit(fightbutton.image, (fightbutton.rect.x,fightbutton.rect.y))
+        screen.blit(actbutton.image, (actbutton.rect.x, actbutton.rect.y))
+        screen.blit(itembutton.image, (itembutton.rect.x, itembutton.rect.y))
+        screen.blit(mercbutton.image, (mercbutton.rect.x, mercbutton.rect.y))
+
+        screen.blit(golem.image, (golem.fakex, golem.fakey))
+
+        fightbutton.rect.x = SCREEN_WIDTH/2-797.6
+        fightbutton.rect.y = 500
+
+        actbutton.rect.x = SCREEN_WIDTH/2-797.6+fightbutton.rect.w+25
+        actbutton.rect.y = 500
+
+        itembutton.rect.x = SCREEN_WIDTH/2-797.6+fightbutton.rect.w+25+actbutton.rect.w+25
+        itembutton.rect.y = 500
+
+        mercbutton.rect.x = SCREEN_WIDTH/2-797.6+fightbutton.rect.w+25+actbutton.rect.w+25+itembutton.rect.w+25
+        mercbutton.rect.y = 500
+
+        #25INCHMARGINS
         
         mouse = pygame.mouse.get_pos()
 
@@ -364,8 +402,11 @@ while running:
                 running = False
                 break
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if fightbuttonrect.collidepoint(mouse):
+                if fightbutton.rect.collidepoint(mouse):
                     gamestate = "attack"
+                    continue
+                elif actbutton.rect.collidepoint(mouse):
+                    gamestate = "actions"
                     continue
         
         pygame.display.flip()
@@ -376,6 +417,10 @@ while running:
 
     elif gamestate == "attack":
         screen.fill((0,0,0))
+
+        golem.idleanimation()
+
+        screen.blit(golem.image, (golem.fakex, golem.fakey))
 
         tshb.upd()
         tshb.drawit()
@@ -401,8 +446,10 @@ while running:
                 elif thiscolor == "green":
                     golem.health -= 3
                 if golem.health <= 0:
-                    running = False
-                    break
+                    gamestate = "main"
+                    player.isgolemdefeated = True
+                    golem.health = 15
+                    continue
                 #print("ok")
                 last = pygame.time.get_ticks()
                 linestopped = False
@@ -435,6 +482,10 @@ while running:
     elif gamestate == "defend":
         screen.fill((255,255,255))
 
+        golem.idleanimation()
+
+        screen.blit(golem.image, (golem.fakex, golem.fakey))
+
         tshb.upd()
         tshb.drawit()
 
@@ -455,7 +506,7 @@ while running:
             golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
             golclub4.rect.bottom = downmostbox+200
             golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
-            gamestate = "attack"
+            gamestate = "fight"
             continue
 
         if now-last >= 1500:
@@ -471,7 +522,7 @@ while running:
                 screen.blit(golclub4.image, (golclub4.rect.x,golclub4.rect.y))
                 golclub4.move(-5)
             if utheart.rect.colliderect(golclub.rect) or utheart.rect.colliderect(golclub2.rect) or utheart.rect.colliderect(golclub3.rect) or utheart.rect.colliderect(golclub4.rect):
-                player.health -= 1
+                player.health -= 2
                 if player.health == 0:
                     running = False
                     break
