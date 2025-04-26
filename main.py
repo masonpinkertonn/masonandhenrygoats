@@ -2,6 +2,9 @@ global ischange
 
 import pygame
 import random
+import textwrap
+
+wrapper = textwrap.TextWrapper(width=30)
 
 pygame.init()
 pygame.font.init()
@@ -10,6 +13,8 @@ compinf = pygame.display.Info()
 
 SCREEN_WIDTH = compinf.current_w
 SCREEN_HEIGHT = compinf.current_h
+
+wrapwidth = 2
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
 
@@ -38,7 +43,7 @@ class Player(pygame.sprite.Sprite):
         names.append('Wraith_01_Idle_011.png')
         for i in names:
             tempimg = pygame.image.load(i)
-            tempimg = pygame.transform.scale(tempimg, (103.5,149))
+            tempimg = pygame.transform.scale(tempimg, (100.5,144.5))
             self.sprites.append(tempimg)
         self.currentsprite = 0
         self.movesprites = []
@@ -113,21 +118,30 @@ def golemdialogue(currentline):
     for line in dialogue:
         if '\n' in line:
             line = line[0:-1]
-        lines.append(line)
+        mytxt = wrapper.wrap(line)
+        if len(mytxt) > 1:
+            print("geis")
+            lines.append(line)
+        elif len(mytxt) == 1:
+            lines.append(mytxt[0])
     dialogue.close()
     try:
         if lines[currentline][0] == "-":
             templine = lines[currentline][1:]
-            return (pygame.font.SysFont("Arial", 30).render(templine, True, (255,255,255)), currentline, "player")
+            toxt = pygame.font.SysFont("Arial", 30).render(templine, True, (255,255,255))
+            return (toxt, currentline, "player", toxt.get_rect())
         else:
-            return (pygame.font.SysFont("Arial", 30).render(lines[currentline], True, (255,255,255)), currentline, "monster")
+            toxt = pygame.font.SysFont("Arial", 30).render(lines[currentline], True, (255,255,255))
+            return (toxt, currentline, "monster", toxt.get_rect())
     except IndexError:
         currentline = 0
         if lines[currentline][0] == "-":
             templine = lines[currentline][1:]
-            return (pygame.font.SysFont("Arial", 30).render(templine, True, (255,255,255)), currentline, "player")
+            toxt = pygame.font.SysFont("Arial", 30).render(templine, True, (255,255,255))
+            return (toxt, currentline, "player", toxt.get_rect())
         else:
-            return (pygame.font.SysFont("Arial", 30).render(lines[currentline], True, (255,255,255)), currentline, "monster")
+            toxt = pygame.font.SysFont("Arial", 30).render(lines[currentline], True, (255,255,255))
+            return (toxt, currentline, "monster", toxt.get_rect())
 
 running = True
 clock = pygame.time.Clock()
@@ -171,11 +185,13 @@ class BIGBUTTTON:
 
 fightbutton = BIGBUTTTON('FIGHTBUTTON.png')
 
-actbutton = BIGBUTTTON('ACTBUTTON.png')
-
 itembutton = BIGBUTTTON('TRUE.jpg')
 
 mercbutton = BIGBUTTTON('MERCBEAST.jpg')
+
+returnbutton = BIGBUTTTON('returnbeast.png')
+returnbutton.image = pygame.transform.scale(returnbutton.image, (89, 26))
+returnbutton.rect = returnbutton.image.get_rect()
 
 rollx = SCREEN_WIDTH/2-275
 my_y = SCREEN_HEIGHT/2-50
@@ -269,9 +285,16 @@ class MonsterHB:
 tshb = HealthBar()
 monstahb = MonsterHB()
 
+gamestats = {"currentmonster":golem, "route":"pacifist"}
+
 while running:
     if gamestate == "main":
         screen.fill((0,0,0))
+        
+        #pygame.draw.rect(screen, "red", (player.rect.x, player.rect.y, player.rect.w, player.rect.h))
+
+        tempimg = pygame.image.load('Wraith_01_Idle_000.png')
+        minime = pygame.transform.scale(tempimg, (50.25, 72.25))
 
         #pygame.draw.rect(screen, (255,255,255), (player.rect.x, player.rect.y, player.rect.w, player.rect.h))
 
@@ -280,6 +303,8 @@ while running:
             x = golemdialogue(dialogueline)
 
             dialogueline = x[1]
+
+            txtrct = x[3]
 
         screen.blit(player.image, (player.rect.x, player.rect.y))
 
@@ -304,8 +329,9 @@ while running:
                 screen.blit(e_button.image, (golem.rect.x+50,golem.rect.y-60))
                 if x[2] == "monster":
                     pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
-                    pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-290,SCREEN_HEIGHT-240,580,180))
-                    screen.blit(x[0], (SCREEN_WIDTH/2-280,SCREEN_HEIGHT-230))
+                    tsrect = pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-290,SCREEN_HEIGHT-240,580,180))
+                    screen.blit(minime, (SCREEN_WIDTH/2-280,tsrect.centery-36.125))
+                    screen.blit(x[0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
                 elif x[2] == "player":
                     pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
                     pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-290,SCREEN_HEIGHT-240,580,180))
@@ -375,22 +401,18 @@ while running:
         golem.fakey = 200
 
         screen.blit(fightbutton.image, (fightbutton.rect.x,fightbutton.rect.y))
-        screen.blit(actbutton.image, (actbutton.rect.x, actbutton.rect.y))
         screen.blit(itembutton.image, (itembutton.rect.x, itembutton.rect.y))
         screen.blit(mercbutton.image, (mercbutton.rect.x, mercbutton.rect.y))
 
         screen.blit(golem.image, (golem.fakex, golem.fakey))
 
-        fightbutton.rect.x = SCREEN_WIDTH/2-797.6
+        fightbutton.rect.x = SCREEN_WIDTH/2-635.7
         fightbutton.rect.y = 500
 
-        actbutton.rect.x = SCREEN_WIDTH/2-797.6+fightbutton.rect.w+25
-        actbutton.rect.y = 500
-
-        itembutton.rect.x = SCREEN_WIDTH/2-797.6+fightbutton.rect.w+25+actbutton.rect.w+25
+        itembutton.rect.x = SCREEN_WIDTH/2-635.7+fightbutton.rect.w+50
         itembutton.rect.y = 500
 
-        mercbutton.rect.x = SCREEN_WIDTH/2-797.6+fightbutton.rect.w+25+actbutton.rect.w+25+itembutton.rect.w+25
+        mercbutton.rect.x = SCREEN_WIDTH/2-635.7+fightbutton.rect.w+50+itembutton.rect.w+50
         mercbutton.rect.y = 500
 
         #25INCHMARGINS
@@ -405,8 +427,11 @@ while running:
                 if fightbutton.rect.collidepoint(mouse):
                     gamestate = "attack"
                     continue
-                elif actbutton.rect.collidepoint(mouse):
-                    gamestate = "actions"
+                elif itembutton.rect.collidepoint(mouse):
+                    gamestate = "item"
+                    continue
+                elif mercbutton.rect.collidepoint(mouse):
+                    gamestate = "mercy"
                     continue
         
         pygame.display.flip()
@@ -451,8 +476,9 @@ while running:
                     golem.health = 15
                     continue
                 #print("ok")
+                tempx = SCREEN_WIDTH/2-275
+                linegoinleft = False
                 last = pygame.time.get_ticks()
-                linestopped = False
                 gamestate = "defend"
                 newlast = pygame.time.get_ticks()
                 round += 1
@@ -472,6 +498,69 @@ while running:
             tempx-=5
         elif not(linegoinleft) and not(linestopped):
             tempx+=5
+
+        pygame.display.flip()
+
+        clock.tick(60)
+
+        now = pygame.time.get_ticks()
+
+    elif gamestate == "mercy":
+        screen.fill((0,0,0))
+
+        golem.idleanimation()
+
+        screen.blit(golem.image, (golem.fakex, golem.fakey))
+
+        blackx = SCREEN_WIDTH/2-390
+        blacky = SCREEN_HEIGHT-640
+
+        returnbutton.rect.x = blackx
+        returnbutton.rect.y = blacky+254
+
+        pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-400,SCREEN_HEIGHT-650,800,300))
+        pygame.draw.rect(screen, "black", (blackx,blacky,780,280))
+        screen.blit(returnbutton.image, (returnbutton.rect.x,returnbutton.rect.y))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                break
+
+        pygame.display.flip()
+
+        clock.tick(60)
+
+        now = pygame.time.get_ticks()
+
+    elif gamestate == "item":
+
+        mouse = pygame.mouse.get_pos()
+
+        screen.fill((0,0,0))
+
+        golem.idleanimation()
+
+        screen.blit(golem.image, (golem.fakex, golem.fakey))
+
+        blackx = SCREEN_WIDTH/2-390
+        blacky = SCREEN_HEIGHT-640
+
+        returnbutton.rect.x = blackx
+        returnbutton.rect.y = blacky+254
+
+        pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-400,SCREEN_HEIGHT-650,800,300))
+        pygame.draw.rect(screen, "black", (blackx,blacky,780,280))
+        screen.blit(returnbutton.image, (returnbutton.rect.x,returnbutton.rect.y))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                break
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if returnbutton.rect.collidepoint(mouse):
+                    gamestate="fight"
+                    continue
 
         pygame.display.flip()
 
@@ -507,6 +596,7 @@ while running:
             golclub4.rect.bottom = downmostbox+200
             golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
             gamestate = "fight"
+            linestopped = False
             continue
 
         if now-last >= 1500:
@@ -526,6 +616,7 @@ while running:
                 if player.health == 0:
                     running = False
                     break
+                utheart.rect.center = [SCREEN_WIDTH/2, SCREEN_HEIGHT/2]
                 golclub.rect.left = leftmostbox-200
                 golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
                 golclub2.rect.right = rightmostbox+200
