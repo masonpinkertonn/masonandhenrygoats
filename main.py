@@ -296,6 +296,9 @@ while running:
         tempimg = pygame.image.load('Wraith_01_Idle_000.png')
         minime = pygame.transform.scale(tempimg, (50.25, 72.25))
 
+        tempgolimg = pygame.image.load('Golem_01_Idle Blinking_000.png')
+        minigol = pygame.transform.scale(tempgolimg, (50.25, 72.25))
+
         #pygame.draw.rect(screen, (255,255,255), (player.rect.x, player.rect.y, player.rect.w, player.rect.h))
 
         if not(player.isgolemdefeated):
@@ -330,12 +333,13 @@ while running:
                 if x[2] == "monster":
                     pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
                     tsrect = pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-290,SCREEN_HEIGHT-240,580,180))
-                    screen.blit(minime, (SCREEN_WIDTH/2-280,tsrect.centery-36.125))
+                    screen.blit(minigol, (SCREEN_WIDTH/2-280,tsrect.centery-36.125))
                     screen.blit(x[0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
                 elif x[2] == "player":
                     pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
                     pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-290,SCREEN_HEIGHT-240,580,180))
-                    screen.blit(x[0], (SCREEN_WIDTH/2-280,SCREEN_HEIGHT-230))
+                    screen.blit(minime, (SCREEN_WIDTH/2-280,tsrect.centery-36.125))
+                    screen.blit(x[0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
                 e_button.isshowing = True
             else:
                 e_button.isshowing = False
@@ -506,6 +510,9 @@ while running:
         now = pygame.time.get_ticks()
 
     elif gamestate == "mercy":
+
+        mouse = pygame.mouse.get_pos()
+
         screen.fill((0,0,0))
 
         golem.idleanimation()
@@ -526,6 +533,10 @@ while running:
             if event.type == pygame.QUIT:
                 running = False
                 break
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if returnbutton.rect.collidepoint(mouse):
+                    gamestate="fight"
+                    continue
 
         pygame.display.flip()
 
