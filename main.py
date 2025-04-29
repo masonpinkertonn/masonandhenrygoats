@@ -1,5 +1,3 @@
-global ischange
-
 import pygame
 import random
 import textwrap
@@ -295,6 +293,8 @@ monstahb = MonsterHB()
 
 gamestats = {"currentmonster":golem, "route":"pacifist"}
 
+playerinv = {"Pie": ["Pie", 5], "Other Pie": ["deez", 3]}
+
 while running:
     if gamestate == "main":
         screen.fill((0,0,0))
@@ -475,6 +475,33 @@ while running:
 
         #print(gamestate)
 
+        key = pygame.key.get_pressed()
+
+        if key[pygame.K_SPACE] or key[pygame.K_e]:
+            linestopped = True
+            for i in hbrects:
+                if tempx >= i.x and tempx <= (i.x + i.width):
+                    thiscolor = i.color
+            if thiscolor == "red":
+                golem.health -= 1
+            elif thiscolor == "yellow":
+                golem.health -= 2
+            elif thiscolor == "green":
+                golem.health -= 3
+            if golem.health <= 0:
+                gamestate = "main"
+                player.isgolemdefeated = True
+                golem.health = 15
+                continue
+            #print("ok")
+            tempx = SCREEN_WIDTH/2-275
+            linegoinleft = False
+            last = pygame.time.get_ticks()
+            gamestate = "defend"
+            newlast = pygame.time.get_ticks()
+            round += 1
+            continue
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -527,6 +554,15 @@ while running:
 
     elif gamestate == "mercy":
 
+        matchcol = "white"
+
+        if round >= 3:
+            matchcol = "yellow"
+
+        myman = 0
+
+        myfont = pygame.font.SysFont("Arial", 30)
+
         mouse = pygame.mouse.get_pos()
 
         screen.fill((0,0,0))
@@ -541,9 +577,15 @@ while running:
         returnbutton.rect.x = blackx
         returnbutton.rect.y = blacky+254
 
+        mytxt = pygame.font.SysFont("Arial", 30).render("Spare", True, matchcol)
+        myrct = mytxt.get_rect()
+        myrct.x = SCREEN_WIDTH/2-myrct.w/2
+        myrct.y = SCREEN_HEIGHT-640+140-myrct.h/2
+
         pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-400,SCREEN_HEIGHT-650,800,300))
         pygame.draw.rect(screen, "black", (blackx,blacky,780,280))
         screen.blit(returnbutton.image, (returnbutton.rect.x,returnbutton.rect.y))
+        screen.blit(mytxt, (myrct.x, myrct.y))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -553,6 +595,18 @@ while running:
                 if returnbutton.rect.collidepoint(mouse):
                     gamestate="fight"
                     continue
+                if myrct.collidepoint(mouse):
+                    if matchcol == "white":
+                        last = pygame.time.get_ticks()
+                        newlast = pygame.time.get_ticks()
+                        gamestate = "defend"
+                        round += 1
+                        continue
+                    elif matchcol == "yellow":
+                        gamestate = "main"
+                        player.isgolemdefeated = True
+                        golem.health = 15
+                        continue
 
         pygame.display.flip()
 
@@ -561,6 +615,10 @@ while running:
         now = pygame.time.get_ticks()
 
     elif gamestate == "item":
+
+        myman = 0
+
+        myfont = pygame.font.SysFont("Arial", 30)
 
         mouse = pygame.mouse.get_pos()
 
@@ -579,6 +637,12 @@ while running:
         pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-400,SCREEN_HEIGHT-650,800,300))
         pygame.draw.rect(screen, "black", (blackx,blacky,780,280))
         screen.blit(returnbutton.image, (returnbutton.rect.x,returnbutton.rect.y))
+
+        for item in playerinv:
+            thistext = myfont.render(item, True, (255,255,255))
+            tsrectt = thistext.get_rect()
+            screen.blit(thistext, (blackx,blacky+myman))
+            myman+=tsrectt.h+10
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
