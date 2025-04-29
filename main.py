@@ -120,28 +120,36 @@ def golemdialogue(currentline):
             line = line[0:-1]
         mytxt = wrapper.wrap(line)
         if len(mytxt) > 1:
-            print("geis")
-            lines.append(line)
+            lines.append(mytxt)
         elif len(mytxt) == 1:
             lines.append(mytxt[0])
     dialogue.close()
-    try:
-        if lines[currentline][0] == "-":
-            templine = lines[currentline][1:]
-            toxt = pygame.font.SysFont("Arial", 30).render(templine, True, (255,255,255))
-            return (toxt, currentline, "player", toxt.get_rect())
-        else:
-            toxt = pygame.font.SysFont("Arial", 30).render(lines[currentline], True, (255,255,255))
-            return (toxt, currentline, "monster", toxt.get_rect())
-    except IndexError:
-        currentline = 0
-        if lines[currentline][0] == "-":
-            templine = lines[currentline][1:]
-            toxt = pygame.font.SysFont("Arial", 30).render(templine, True, (255,255,255))
-            return (toxt, currentline, "player", toxt.get_rect())
-        else:
-            toxt = pygame.font.SysFont("Arial", 30).render(lines[currentline], True, (255,255,255))
-            return (toxt, currentline, "monster", toxt.get_rect())
+    while True:
+        try:
+            ismonster = "monster"
+            if isinstance(lines[currentline], list):
+                tempchecks = []
+                for line in lines[currentline]:
+                    if line[0] == "-":
+                        templine = line[1:]
+                        toxt = pygame.font.SysFont("Arial", 30).render(templine, True, (255,255,255))
+                        tempchecks.append(toxt)
+                    else:
+                        toxt = pygame.font.SysFont("Arial", 30).render(line, True, (255,255,255))
+                        tempchecks.append(toxt)
+                if lines[currentline][0][0] == "-":
+                    ismonster = "player"
+                return (tempchecks, currentline, ismonster, toxt.get_rect())
+            
+            elif lines[currentline][0] == "-":
+                templine = lines[currentline][1:]
+                toxt = pygame.font.SysFont("Arial", 30).render(templine, True, (255,255,255))
+                return (toxt, currentline, "player", toxt.get_rect())
+            else:
+                toxt = pygame.font.SysFont("Arial", 30).render(lines[currentline], True, (255,255,255))
+                return (toxt, currentline, "monster", toxt.get_rect())
+        except IndexError:
+            currentline = 0
 
 running = True
 clock = pygame.time.Clock()
@@ -334,12 +342,20 @@ while running:
                     pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
                     tsrect = pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-290,SCREEN_HEIGHT-240,580,180))
                     screen.blit(minigol, (SCREEN_WIDTH/2-280,tsrect.centery-36.125))
-                    screen.blit(x[0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
+                    if isinstance(x[0], list):
+                        screen.blit(x[0][0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
+                        screen.blit(x[0][1], (SCREEN_WIDTH/2-280+50.25+25,SCREEN_HEIGHT-200))
+                    else:
+                        screen.blit(x[0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
                 elif x[2] == "player":
                     pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
                     pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-290,SCREEN_HEIGHT-240,580,180))
                     screen.blit(minime, (SCREEN_WIDTH/2-280,tsrect.centery-36.125))
-                    screen.blit(x[0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
+                    if isinstance(x[0], list):
+                        screen.blit(x[0][0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
+                        screen.blit(x[0][1], (SCREEN_WIDTH/2-280+50.25+25,SCREEN_HEIGHT-200))
+                    else:
+                        screen.blit(x[0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
                 e_button.isshowing = True
             else:
                 e_button.isshowing = False
