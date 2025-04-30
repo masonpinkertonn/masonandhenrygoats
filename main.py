@@ -638,10 +638,15 @@ while running:
         pygame.draw.rect(screen, "black", (blackx,blacky,780,280))
         screen.blit(returnbutton.image, (returnbutton.rect.x,returnbutton.rect.y))
 
+        myrects = []
+
         for item in playerinv:
             thistext = myfont.render(item, True, (255,255,255))
             tsrectt = thistext.get_rect()
-            screen.blit(thistext, (blackx,blacky+myman))
+            tsrectt.x = blackx
+            tsrectt.y = blacky+myman
+            myrects.append(tsrectt)
+            screen.blit(thistext, (tsrectt.x,tsrectt.y))
             myman+=tsrectt.h+10
 
         for event in pygame.event.get():
@@ -652,6 +657,10 @@ while running:
                 if returnbutton.rect.collidepoint(mouse):
                     gamestate="fight"
                     continue
+                for i in myrects:
+                    if i.collidepoint(mouse):
+                        gamestate = "main"
+                        continue
 
         pygame.display.flip()
 
