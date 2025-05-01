@@ -415,6 +415,12 @@ while running:
     elif gamestate == "fight":
         screen.fill("red")
 
+        tshb.upd()
+        tshb.drawit()
+
+        monstahb.upd()
+        monstahb.drawit()
+
         golem.idleanimation()
 
         golem.fakex = SCREEN_WIDTH/2-100
@@ -554,6 +560,12 @@ while running:
 
     elif gamestate == "mercy":
 
+        tshb.upd()
+        tshb.drawit()
+
+        monstahb.upd()
+        monstahb.drawit()
+
         matchcol = "white"
 
         if round >= 3:
@@ -624,6 +636,12 @@ while running:
 
         screen.fill((0,0,0))
 
+        tshb.upd()
+        tshb.drawit()
+
+        monstahb.upd()
+        monstahb.drawit()
+
         golem.idleanimation()
 
         screen.blit(golem.image, (golem.fakex, golem.fakey))
@@ -659,7 +677,13 @@ while running:
                     continue
                 for i in myrects:
                     if i.collidepoint(mouse):
-                        gamestate = "main"
+                        last = pygame.time.get_ticks()
+                        newlast = pygame.time.get_ticks()
+                        gamestate = "defend"
+                        round += 1
+                        player.health += 5
+                        if player.health > 20:
+                            player.health =20
                         continue
 
         pygame.display.flip()
