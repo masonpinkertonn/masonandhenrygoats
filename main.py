@@ -31,6 +31,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         self.health = 20
         self.isgolemdefeated = False
+        self.isbirddefeated = False
         self.goingup = False
         self.goingdown = False
         self.goingleft = False
@@ -112,8 +113,33 @@ class Golem(pygame.sprite.Sprite):
 
         self.image = self.sprites[int(self.currentsprite)]
 
-def golemdialogue(currentline):
-    dialogue = open('golemtext.npc', 'r')
+class Bird(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.health = 15
+        self.sprites = []
+        names = []
+        for i in range(4):
+            names.append('birdie00'+str(i)+'.png')
+        for i in names:
+            tempimg = pygame.image.load(i)
+            tempimg = pygame.transform.scale(tempimg, (200,200))
+            self.sprites.append(tempimg)
+        self.currentsprite = 0
+        self.image = self.sprites[self.currentsprite]
+        self.rect = self.image.get_rect()
+    def idleanimation(self):
+        self.currentsprite += 0.1
+
+        if self.currentsprite >= len(self.sprites):
+            self.currentsprite = 0
+
+        self.image = self.sprites[int(self.currentsprite)]
+
+birb = Bird()
+
+def golemdialogue(currentline, fname):
+    dialogue = open(fname, 'r')
     lines = []
     for line in dialogue:
         if '\n' in line:
@@ -157,7 +183,8 @@ clock = pygame.time.Clock()
 player = Player()
 golem = Golem()
 
-dialogueline = 0
+newdialogueline = 0
+golemdialogueline = 0
 
 last = pygame.time.get_ticks()
 now = pygame.time.get_ticks()
@@ -166,7 +193,8 @@ class ebutton:
     def __init__(self):
         self.image = pygame.image.load('e_button.png')
         self.image = pygame.transform.scale(self.image, (50,50))
-        self.isshowingdialogue = False
+        self.isshowinggolemdialogue = False
+        self.isshowingbirddialogue = False
         self.isshowingshop = False
 
 e_button = ebutton()
@@ -312,6 +340,8 @@ trrect = truesans.get_rect()
 trrect.x = SCREEN_WIDTH/2-trrect.w/2
 trrect.y = SCREEN_HEIGHT/2-trrect.h/2
 
+birb.rect.y = 700
+
 while running:
     if gamestate == "main":
         screen.fill((0,0,0))
@@ -336,14 +366,6 @@ while running:
 
         #pygame.draw.rect(screen, (255,255,255), (player.rect.x, player.rect.y, player.rect.w, player.rect.h))
 
-        if not(player.isgolemdefeated):
-
-            x = golemdialogue(dialogueline)
-
-            dialogueline = x[1]
-
-            txtrct = x[3]
-
         screen.blit(player.image, (player.rect.x, player.rect.y))
 
         if player.rect.right >= SCREEN_WIDTH:
@@ -367,7 +389,50 @@ while running:
         if player.rect.colliderect(srect):
             docollisions(srect)
 
+        if not(player.isbirddefeated):
+
+            z = golemdialogue(newdialogueline, "birddialogue.npc")
+
+            newdialogueline = z[1]
+
+            newtxtrct = z[3]
+
+            screen.blit(birb.image, (birb.rect.x,birb.rect.y))
+            birb.idleanimation()
+            if expansion.colliderect(birb.rect):
+                screen.blit(e_button.image, (birb.rect.x+50,birb.rect.y))
+                if z[2] == "monster":
+                    pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
+                    tsrect = pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-290,SCREEN_HEIGHT-240,580,180))
+                    screen.blit(minigol, (SCREEN_WIDTH/2-280,tsrect.centery-36.125))
+                    if isinstance(z[0], list):
+                        screen.blit(z[0][0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
+                        screen.blit(z[0][1], (SCREEN_WIDTH/2-280+50.25+25,SCREEN_HEIGHT-200))
+                    else:
+                        screen.blit(z[0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
+                elif z[2] == "player":
+                    pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
+                    pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-290,SCREEN_HEIGHT-240,580,180))
+                    screen.blit(minime, (SCREEN_WIDTH/2-280,tsrect.centery-36.125))
+                    if isinstance(z[0], list):
+                        screen.blit(z[0][0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
+                        screen.blit(z[0][1], (SCREEN_WIDTH/2-280+50.25+25,SCREEN_HEIGHT-200))
+                    else:
+                        screen.blit(z[0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
+                e_button.isshowingbirddialogue = True
+            else:
+                e_button.isshowingbirddialogue = False
+                newdialogueline = 0
+            if player.rect.colliderect(birb.rect):
+                docollisions(birb.rect)
+
         if not(player.isgolemdefeated):
+
+            x = golemdialogue(golemdialogueline, "golemtext.npc")
+
+            golemdialogueline = x[1]
+
+            txtrct = x[3]
 
             golem.idleanimation()
 
@@ -393,10 +458,10 @@ while running:
                         screen.blit(x[0][1], (SCREEN_WIDTH/2-280+50.25+25,SCREEN_HEIGHT-200))
                     else:
                         screen.blit(x[0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
-                e_button.isshowingdialogue = True
+                e_button.isshowinggolemdialogue = True
             else:
-                e_button.isshowingdialogue = False
-                dialogueline = 0
+                e_button.isshowinggolemdialogue = False
+                golemdialogueline = 0
 
             if player.rect.colliderect(golem.rect):
                 docollisions(golem.rect)
@@ -434,14 +499,21 @@ while running:
             player.movement()
         if not(player.ismoving):
             player.idleanimation()
-        if key[pygame.K_e] and e_button.isshowingdialogue:
+        if key[pygame.K_e] and e_button.isshowinggolemdialogue:
             if now - last >= 1500:
                 last = pygame.time.get_ticks()
-                if dialogueline == 5:
-                    dialogueline = 0
+                if golemdialogueline == 5:
+                    golemdialogueline = 0
                     gamestate = "fight"
                     continue
-                dialogueline += 1
+                golemdialogueline += 1
+        if key[pygame.K_e] and e_button.isshowingbirddialogue:
+            if now - last >= 1500:
+                last = pygame.time.get_ticks()
+                if newdialogueline == 5:
+                    newdialogueline = 0
+                    continue
+                newdialogueline += 1
         if key[pygame.K_e] and e_button.isshowingshop:
             gamestate = "shop"
             continue
