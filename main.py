@@ -2,6 +2,8 @@ import pygame
 import random
 import textwrap
 
+inshop = {"Pie": ["Pie",5,1], "Cake":["Cake",10,2], "Amazing":["Amazing",15,3]}
+
 wrapper = textwrap.TextWrapper(width=30)
 
 pygame.init()
@@ -164,21 +166,22 @@ class ebutton:
     def __init__(self):
         self.image = pygame.image.load('e_button.png')
         self.image = pygame.transform.scale(self.image, (50,50))
-        self.isshowing = False
+        self.isshowingdialogue = False
+        self.isshowingshop = False
 
 e_button = ebutton()
 
 golem.rect.y = 400
 
-def docollisions():
+def docollisions(rct):
     if player.goingleft:
-        player.rect.left = golem.rect.right#-1
+        player.rect.left = rct.right#-1
     elif player.goingdown:
-        player.rect.bottom = golem.rect.top#+1
+        player.rect.bottom = rct.top#+1
     elif player.goingup:
-        player.rect.top = golem.rect.bottom#-1
+        player.rect.top = rct.bottom#-1
     elif player.goingright:
-        player.rect.right = golem.rect.left#+1
+        player.rect.right = rct.left#+1
 
 gamestate = "main"
 
@@ -291,15 +294,39 @@ class MonsterHB:
 tshb = HealthBar()
 monstahb = MonsterHB()
 
-gamestats = {"currentmonster":golem, "route":"pacifist"}
+gamestats = {"currentmonster":golem, "route":"pacifist", "money":0}
 
-playerinv = {"Pie": ["Pie", 5], "Other Pie": ["deez", 3]}
+playerinv = {}
+
+sansbutt = pygame.image.load("SANS.png")
+#75x100
+sansbutt = pygame.transform.scale(sansbutt, (225,300))
+srect = sansbutt.get_rect()
+srect.x = SCREEN_WIDTH-srect.w-10
+srect.y = SCREEN_HEIGHT/2-srect.h/2
+
+truesans = pygame.image.load("skibidi.png")
+#1024x1346
+truesans = pygame.transform.scale(truesans, (1024/5,1346/5))
+trrect = truesans.get_rect()
+trrect.x = SCREEN_WIDTH/2-trrect.w/2
+trrect.y = SCREEN_HEIGHT/2-trrect.h/2
 
 while running:
     if gamestate == "main":
         screen.fill((0,0,0))
+
+        thisfont = pygame.font.SysFont("Arial", 30)
+
+        thistxt = "Coins: " + str(gamestats["money"])
+
+        mytxt = thisfont.render(thistxt, True, "white")
+
+        screen.blit(mytxt, (10,10))
         
         #pygame.draw.rect(screen, "red", (player.rect.x, player.rect.y, player.rect.w, player.rect.h))
+
+        screen.blit(sansbutt, (srect.x,srect.y))
 
         tempimg = pygame.image.load('Wraith_01_Idle_000.png')
         minime = pygame.transform.scale(tempimg, (50.25, 72.25))
@@ -328,13 +355,23 @@ while running:
         if player.rect.bottom >= SCREEN_HEIGHT:
             player.rect.bottom = SCREEN_HEIGHT
 
+        expansion = player.rect.inflate(50,50)
+
+        if expansion.colliderect(srect):
+            erect = e_button.image.get_rect()
+            screen.blit(e_button.image, (srect.topright[0]-srect.w/2-erect.w/2,srect.topright[1]-50))
+            e_button.isshowingshop=True
+        else:
+            e_button.isshowingshop = False
+
+        if player.rect.colliderect(srect):
+            docollisions(srect)
+
         if not(player.isgolemdefeated):
 
             golem.idleanimation()
 
             screen.blit(golem.image, (golem.rect.x, golem.rect.y))
-
-            expansion = player.rect.inflate(50,50)
 
             if expansion.colliderect(golem.rect):
                 screen.blit(e_button.image, (golem.rect.x+50,golem.rect.y-60))
@@ -356,13 +393,13 @@ while running:
                         screen.blit(x[0][1], (SCREEN_WIDTH/2-280+50.25+25,SCREEN_HEIGHT-200))
                     else:
                         screen.blit(x[0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
-                e_button.isshowing = True
+                e_button.isshowingdialogue = True
             else:
-                e_button.isshowing = False
+                e_button.isshowingdialogue = False
                 dialogueline = 0
 
             if player.rect.colliderect(golem.rect):
-                docollisions()
+                docollisions(golem.rect)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -397,7 +434,7 @@ while running:
             player.movement()
         if not(player.ismoving):
             player.idleanimation()
-        if key[pygame.K_e] and e_button.isshowing:
+        if key[pygame.K_e] and e_button.isshowingdialogue:
             if now - last >= 1500:
                 last = pygame.time.get_ticks()
                 if dialogueline == 5:
@@ -405,6 +442,9 @@ while running:
                     gamestate = "fight"
                     continue
                 dialogueline += 1
+        if key[pygame.K_e] and e_button.isshowingshop:
+            gamestate = "shop"
+            continue
 
         pygame.display.flip()
 
@@ -413,7 +453,7 @@ while running:
         now = pygame.time.get_ticks()
 
     elif gamestate == "fight":
-        screen.fill("red")
+        screen.fill("black")
 
         tshb.upd()
         tshb.drawit()
@@ -527,6 +567,7 @@ while running:
                     gamestate = "main"
                     player.isgolemdefeated = True
                     golem.health = 15
+                    gamestats["money"] += 5
                     continue
                 #print("ok")
                 tempx = SCREEN_WIDTH/2-275
@@ -657,14 +698,17 @@ while running:
         screen.blit(returnbutton.image, (returnbutton.rect.x,returnbutton.rect.y))
 
         myrects = []
+        mifontes = []
 
         for item in playerinv:
-            thistext = myfont.render(item, True, (255,255,255))
-            tsrectt = thistext.get_rect()
+            thistext = {"text":myfont.render((playerinv.get(item))[0]+" - +" + str((playerinv.get(item))[1]) + " HP", True, (255,255,255)),"rect":0}
+            tsrectt = thistext["text"].get_rect()
             tsrectt.x = blackx
             tsrectt.y = blacky+myman
+            thistext["rect"] = tsrectt
             myrects.append(tsrectt)
-            screen.blit(thistext, (tsrectt.x,tsrectt.y))
+            mifontes.append(thistext)
+            screen.blit(thistext["text"], (thistext["rect"].x, thistext["rect"].y))
             myman+=tsrectt.h+10
 
         for event in pygame.event.get():
@@ -677,11 +721,15 @@ while running:
                     continue
                 for i in myrects:
                     if i.collidepoint(mouse):
+                        for z in mifontes:
+                            if z["rect"].x == i.x and z["rect"].y == i.y:
+                                thishlth = list(playerinv.values())[mifontes.index(z)][1]
+                                playerinv.pop(list(playerinv.keys())[mifontes.index(z)])
                         last = pygame.time.get_ticks()
                         newlast = pygame.time.get_ticks()
                         gamestate = "defend"
                         round += 1
-                        player.health += 5
+                        player.health += thishlth
                         if player.health > 20:
                             player.health =20
                         continue
@@ -693,7 +741,7 @@ while running:
         now = pygame.time.get_ticks()
 
     elif gamestate == "defend":
-        screen.fill((255,255,255))
+        screen.fill("black")
 
         golem.idleanimation()
 
@@ -706,6 +754,8 @@ while running:
         monstahb.drawit()
 
         utheart.checks()
+
+        pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-160,SCREEN_HEIGHT/2-160,320,320))
 
         pygame.draw.rect(screen, (0,0,0), (SCREEN_WIDTH/2-150,SCREEN_HEIGHT/2-150,300,300))
 
@@ -784,6 +834,73 @@ while running:
         elif key[pygame.K_RIGHT]:
             utheart.rect.x += 6
         
+        pygame.display.flip()
+
+        clock.tick(60)
+
+        now = pygame.time.get_ticks()
+
+    elif gamestate == "shop":
+
+        myman=0
+
+        myfont = pygame.font.SysFont("Arial", 30)
+
+        mouse = pygame.mouse.get_pos()
+
+        screen.fill("black")
+
+        thisfont = pygame.font.SysFont("Arial", 30)
+
+        thistxt = "Coins: " + str(gamestats["money"])
+
+        mytxt = thisfont.render(thistxt, True, "white")
+
+        screen.blit(mytxt, (10,10))
+
+        screen.blit(truesans, (trrect.x,trrect.y-300))
+
+        blackx = SCREEN_WIDTH/2-390
+        blacky = SCREEN_HEIGHT-640
+
+        returnbutton.rect.x = blackx
+        returnbutton.rect.y = blacky+254
+
+        pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-400,SCREEN_HEIGHT-650,800,300))
+        pygame.draw.rect(screen, "black", (blackx,blacky,780,280))
+        screen.blit(returnbutton.image, (returnbutton.rect.x,returnbutton.rect.y))
+
+        myrects = []
+        mifontes = []
+
+        for item in inshop:
+            thistext = {"text":myfont.render((inshop.get(item))[0]+" - " + str((inshop.get(item))[2]) + " Coins - +" + str((inshop.get(item))[1]) + " HP", True, (255,255,255)),"rect":0}
+            tsrectt = thistext["text"].get_rect()
+            tsrectt.x = blackx
+            tsrectt.y = blacky+myman
+            thistext["rect"] = tsrectt
+            myrects.append(tsrectt)
+            mifontes.append(thistext)
+            screen.blit(thistext["text"], (thistext["rect"].x, thistext["rect"].y))
+            myman+=tsrectt.h+10
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                break
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if returnbutton.rect.collidepoint(mouse):
+                    gamestate="main"
+                    continue
+                for i in myrects:
+                    if i.collidepoint(mouse):
+                        for z in mifontes:
+                            if z["rect"].x == i.x and z["rect"].y == i.y:
+                                if gamestats["money"] >= list(inshop.values())[mifontes.index(z)][2]:
+                                    gamestats["money"] -= list(inshop.values())[mifontes.index(z)][2]
+                                    playerinv[len(playerinv)] = list(inshop.values())[mifontes.index(z)]
+                                    inshop.pop(list(inshop.keys())[mifontes.index(z)])
+
         pygame.display.flip()
 
         clock.tick(60)
