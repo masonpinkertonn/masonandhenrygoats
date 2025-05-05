@@ -1,6 +1,7 @@
 import pygame
 import random
 import textwrap
+from pytmx import *
 
 inshop = {"Pie": ["Pie",5,1], "Cake":["Cake",10,2], "Amazing":["Amazing",15,3]}
 
@@ -17,7 +18,7 @@ SCREEN_HEIGHT = compinf.current_h
 wrapwidth = 2
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
-
+# tmx_data = load_pygame('map/topdownmap.tmx')
 class hitbutton:
     def __init__(self, color, x, y, width, height):
         self.color = color
