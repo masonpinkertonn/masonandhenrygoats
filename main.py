@@ -214,6 +214,20 @@ def docollisions(rct):
 
 gamestate = "main"
 
+class PIPE:
+    def __init__(self):
+        self.image = pygame.image.load('pipe.png')
+        self.image = pygame.transform.scale(self.image, (40, 100))
+        self.rect = self.image.get_rect()
+        self.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+    def move(self, vel):
+        self.rect.x += vel
+
+leftmostbox = SCREEN_WIDTH/2-150
+
+mypipe = PIPE()
+mypipe.rect.left = leftmostbox-200
+
 class BIGBUTTTON:
     def __init__(self,image):
         self.image = pygame.image.load(image)
@@ -367,6 +381,9 @@ while running:
         tempgolimg = pygame.image.load('Golem_01_Idle Blinking_000.png')
         minigol = pygame.transform.scale(tempgolimg, (50.25, 72.25))
 
+        tempbirdimg = pygame.image.load('birdie000.png')
+        minibird = pygame.transform.scale(tempbirdimg, (50.25, 72.25))
+
         #pygame.draw.rect(screen, (255,255,255), (player.rect.x, player.rect.y, player.rect.w, player.rect.h))
 
         screen.blit(player.image, (player.rect.x, player.rect.y))
@@ -407,7 +424,7 @@ while running:
                 if z[2] == "monster":
                     pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
                     tsrect = pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-290,SCREEN_HEIGHT-240,580,180))
-                    screen.blit(minigol, (SCREEN_WIDTH/2-280,tsrect.centery-36.125))
+                    screen.blit(minibird, (SCREEN_WIDTH/2-280,tsrect.centery-36.125))
                     if isinstance(z[0], list):
                         screen.blit(z[0][0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
                         screen.blit(z[0][1], (SCREEN_WIDTH/2-280+50.25+25,SCREEN_HEIGHT-200))
@@ -864,21 +881,24 @@ while running:
 
             if now-newlast >= 11500:
                 utheart.rect.center = [SCREEN_WIDTH/2, SCREEN_HEIGHT/2]
-                golclub.rect.left = leftmostbox-200
-                golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+                mypipe.rect.left = leftmostbox-200
+                mypipe.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+                """
                 golclub2.rect.right = rightmostbox+200
                 golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
                 golclub3.rect.top = upmostbox-200
                 golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
                 golclub4.rect.bottom = downmostbox+200
                 golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+                """
                 gamestate = "fight"
                 linestopped = False
                 continue
 
             if now-last >= 1500:
-                screen.blit(golclub.image, (golclub.rect.x,golclub.rect.y))
-                golclub.move(5)
+                screen.blit(mypipe.image, (mypipe.rect.x,mypipe.rect.y))
+                mypipe.move(5)
+                """
                 if round >= 2:
                     screen.blit(golclub2.image, (golclub2.rect.x,golclub2.rect.y))
                     golclub2.move(-5)
@@ -888,24 +908,29 @@ while running:
                 if round >= 4:
                     screen.blit(golclub4.image, (golclub4.rect.x,golclub4.rect.y))
                     golclub4.move(-5)
-                if utheart.rect.colliderect(golclub.rect) or utheart.rect.colliderect(golclub2.rect) or utheart.rect.colliderect(golclub3.rect) or utheart.rect.colliderect(golclub4.rect):
+                """
+                if utheart.rect.colliderect(mypipe.rect):
                     player.health -= 2
                     if player.health == 0:
                         running = False
                         break
                     utheart.rect.center = [SCREEN_WIDTH/2, SCREEN_HEIGHT/2]
-                    golclub.rect.left = leftmostbox-200
-                    golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+                    mypipe.rect.left = leftmostbox-200
+                    mypipe.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+                    """
                     golclub2.rect.right = rightmostbox+200
                     golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
                     golclub3.rect.top = upmostbox-200
                     golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
                     golclub4.rect.bottom = downmostbox+200
                     golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+                    """
 
-            if golclub.rect.right >= rightmostbox+200:
-                golclub.rect.left = leftmostbox-200
-                golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+            if mypipe.rect.right >= rightmostbox+200:
+                mypipe.rect.left = leftmostbox-200
+                mypipe.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+
+            """
 
             if golclub2.rect.left <= leftmostbox-200:
                 golclub2.rect.right = rightmostbox+200
@@ -918,6 +943,8 @@ while running:
             if golclub4.rect.top <= upmostbox-200:
                 golclub4.rect.bottom = downmostbox+200
                 golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+
+            """
 
             screen.blit(utheart.image, (utheart.rect.x, utheart.rect.y))
 
