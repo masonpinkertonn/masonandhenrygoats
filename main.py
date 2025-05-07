@@ -312,16 +312,18 @@ class HealthBar:
         self.currenthealth = player.health
 
 class MonsterHB:
-    def __init__(self):
-        self.currenthealth = golem.health
+    def __init__(self, monster):
+        self.monster = monster
+        self.currenthealth = self.monster.health
     def drawit(self):
         pygame.draw.rect(screen, "red", (SCREEN_WIDTH-300,0,300,75))
         pygame.draw.rect(screen, "green", (SCREEN_WIDTH-300,0,(300/15)*self.currenthealth,75))
     def upd(self):
-        self.currenthealth = golem.health
+        self.currenthealth = self.monster.health
 
 tshb = HealthBar()
-monstahb = MonsterHB()
+monstahb = MonsterHB(golem)
+birbhb = MonsterHB(birb)
 
 gamestats = {"currentmonster":golem, "route":"pacifist", "money":0}
 
@@ -506,6 +508,7 @@ while running:
                 if golemdialogueline == 5:
                     golemdialogueline = 0
                     gamestate = "fight"
+                    gamestats["currentmonster"] = golem
                     continue
                 golemdialogueline += 1
         if key[pygame.K_e] and e_button.isshowingbirddialogue:
@@ -513,6 +516,8 @@ while running:
                 last = pygame.time.get_ticks()
                 if newdialogueline == 5:
                     newdialogueline = 0
+                    gamestate="fight"
+                    gamestats["currentmonster"] = birb
                     continue
                 newdialogueline += 1
         if key[pygame.K_e] and e_button.isshowingshop:
@@ -530,20 +535,24 @@ while running:
 
         tshb.upd()
         tshb.drawit()
+        
+        if gamestats["currentmonster"] == golem:
+            monstahb.upd()
+            monstahb.drawit()
+        elif gamestats["currentmonster"] == birb:
+            birbhb.upd()
+            birbhb.drawit()
 
-        monstahb.upd()
-        monstahb.drawit()
+        gamestats["currentmonster"].idleanimation()
 
-        golem.idleanimation()
-
-        golem.fakex = SCREEN_WIDTH/2-100
-        golem.fakey = 200
+        gamestats["currentmonster"].fakex = SCREEN_WIDTH/2-100
+        gamestats["currentmonster"].fakey = 200
 
         screen.blit(fightbutton.image, (fightbutton.rect.x,fightbutton.rect.y))
         screen.blit(itembutton.image, (itembutton.rect.x, itembutton.rect.y))
         screen.blit(mercbutton.image, (mercbutton.rect.x, mercbutton.rect.y))
 
-        screen.blit(golem.image, (golem.fakex, golem.fakey))
+        screen.blit(gamestats["currentmonster"].image, (gamestats['currentmonster'].fakex, gamestats["currentmonster"].fakey))
 
         fightbutton.rect.x = SCREEN_WIDTH/2-635.7
         fightbutton.rect.y = 500
@@ -582,15 +591,19 @@ while running:
     elif gamestate == "attack":
         screen.fill((0,0,0))
 
-        golem.idleanimation()
+        gamestats["currentmonster"].idleanimation()
 
-        screen.blit(golem.image, (golem.fakex, golem.fakey))
+        screen.blit(gamestats["currentmonster"].image, (gamestats["currentmonster"].fakex, gamestats["currentmonster"].fakey))
 
         tshb.upd()
         tshb.drawit()
 
-        monstahb.upd()
-        monstahb.drawit()
+        if gamestats["currentmonster"] == golem:
+            monstahb.upd()
+            monstahb.drawit()
+        elif gamestats["currentmonster"] == birb:
+            birbhb.upd()
+            birbhb.drawit()
 
         #print(gamestate)
 
@@ -602,15 +615,17 @@ while running:
                 if tempx >= i.x and tempx <= (i.x + i.width):
                     thiscolor = i.color
             if thiscolor == "red":
-                golem.health -= 1
+                gamestats["currentmonster"].health -= 1
             elif thiscolor == "yellow":
-                golem.health -= 2
+                gamestats["currentmonster"].health -= 2
             elif thiscolor == "green":
-                golem.health -= 3
-            if golem.health <= 0:
+                gamestats["currentmonster"].health -= 3
+            if gamestats["currentmonster"].health <= 0:
                 gamestate = "main"
                 player.isgolemdefeated = True
-                golem.health = 15
+                gamestats["currentmonster"].health = 15
+                gamestats["money"] += 5
+                round = 0
                 continue
             #print("ok")
             tempx = SCREEN_WIDTH/2-275
@@ -631,16 +646,17 @@ while running:
                     if tempx >= i.x and tempx <= (i.x + i.width):
                         thiscolor = i.color
                 if thiscolor == "red":
-                    golem.health -= 1
+                    gamestats["currentmonster"].health -= 1
                 elif thiscolor == "yellow":
-                    golem.health -= 2
+                    gamestats["currentmonster"].health -= 2
                 elif thiscolor == "green":
-                    golem.health -= 3
-                if golem.health <= 0:
+                    gamestats["currentmonster"].health -= 3
+                if gamestats["currentmonster"].health <= 0:
                     gamestate = "main"
                     player.isgolemdefeated = True
-                    golem.health = 15
+                    gamestats["currentmonster"].health = 15
                     gamestats["money"] += 5
+                    round = 0
                     continue
                 #print("ok")
                 tempx = SCREEN_WIDTH/2-275
@@ -674,12 +690,6 @@ while running:
 
     elif gamestate == "mercy":
 
-        tshb.upd()
-        tshb.drawit()
-
-        monstahb.upd()
-        monstahb.drawit()
-
         matchcol = "white"
 
         if round >= 3:
@@ -693,9 +703,19 @@ while running:
 
         screen.fill((0,0,0))
 
-        golem.idleanimation()
+        tshb.upd()
+        tshb.drawit()
 
-        screen.blit(golem.image, (golem.fakex, golem.fakey))
+        if gamestats["currentmonster"] == golem:
+            monstahb.upd()
+            monstahb.drawit()
+        elif gamestats["currentmonster"] == birb:
+            birbhb.upd()
+            birbhb.drawit()
+
+        gamestats["currentmonster"].idleanimation()
+
+        screen.blit(gamestats["currentmonster"].image, (gamestats["currentmonster"].fakex, gamestats["currentmonster"].fakey))
 
         blackx = SCREEN_WIDTH/2-390
         blacky = SCREEN_HEIGHT-640
@@ -732,6 +752,7 @@ while running:
                         gamestate = "main"
                         player.isgolemdefeated = True
                         golem.health = 15
+                        round = 0
                         continue
 
         pygame.display.flip()
@@ -753,12 +774,16 @@ while running:
         tshb.upd()
         tshb.drawit()
 
-        monstahb.upd()
-        monstahb.drawit()
+        if gamestats["currentmonster"] == golem:
+            monstahb.upd()
+            monstahb.drawit()
+        elif gamestats["currentmonster"] == birb:
+            birbhb.upd()
+            birbhb.drawit()
 
-        golem.idleanimation()
+        gamestats["currentmonster"].idleanimation()
 
-        screen.blit(golem.image, (golem.fakex, golem.fakey))
+        screen.blit(gamestats["currentmonster"].image, (gamestats["currentmonster"].fakex, gamestats["currentmonster"].fakey))
 
         blackx = SCREEN_WIDTH/2-390
         blacky = SCREEN_HEIGHT-640
@@ -814,55 +839,30 @@ while running:
         now = pygame.time.get_ticks()
 
     elif gamestate == "defend":
-        screen.fill("black")
+        if gamestats["currentmonster"] == birb:
+            screen.fill("black")
 
-        golem.idleanimation()
+            birb.idleanimation()
 
-        screen.blit(golem.image, (golem.fakex, golem.fakey))
+            screen.blit(birb.image, (birb.fakex, birb.fakey))
 
-        tshb.upd()
-        tshb.drawit()
+            tshb.upd()
+            tshb.drawit()
 
-        monstahb.upd()
-        monstahb.drawit()
+            if gamestats["currentmonster"] == golem:
+                monstahb.upd()
+                monstahb.drawit()
+            elif gamestats["currentmonster"] == birb:
+                birbhb.upd()
+                birbhb.drawit()
 
-        utheart.checks()
+            utheart.checks()
 
-        pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-160,SCREEN_HEIGHT/2-160,320,320))
+            pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-160,SCREEN_HEIGHT/2-160,320,320))
 
-        pygame.draw.rect(screen, (0,0,0), (SCREEN_WIDTH/2-150,SCREEN_HEIGHT/2-150,300,300))
+            pygame.draw.rect(screen, (0,0,0), (SCREEN_WIDTH/2-150,SCREEN_HEIGHT/2-150,300,300))
 
-        if now-newlast >= 11500:
-            utheart.rect.center = [SCREEN_WIDTH/2, SCREEN_HEIGHT/2]
-            golclub.rect.left = leftmostbox-200
-            golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
-            golclub2.rect.right = rightmostbox+200
-            golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
-            golclub3.rect.top = upmostbox-200
-            golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
-            golclub4.rect.bottom = downmostbox+200
-            golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
-            gamestate = "fight"
-            linestopped = False
-            continue
-
-        if now-last >= 1500:
-            screen.blit(golclub.image, (golclub.rect.x,golclub.rect.y))
-            golclub.move(5)
-            if round >= 2:
-                screen.blit(golclub2.image, (golclub2.rect.x,golclub2.rect.y))
-                golclub2.move(-5)
-            if round >= 3:
-                screen.blit(golclub3.image, (golclub3.rect.x,golclub3.rect.y))
-                golclub3.move(5)
-            if round >= 4:
-                screen.blit(golclub4.image, (golclub4.rect.x,golclub4.rect.y))
-                golclub4.move(-5)
-            if utheart.rect.colliderect(golclub.rect) or utheart.rect.colliderect(golclub2.rect) or utheart.rect.colliderect(golclub3.rect) or utheart.rect.colliderect(golclub4.rect):
-                player.health -= 2
-                if player.health == 0:
-                    running = False
-                    break
+            if now-newlast >= 11500:
                 utheart.rect.center = [SCREEN_WIDTH/2, SCREEN_HEIGHT/2]
                 golclub.rect.left = leftmostbox-200
                 golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
@@ -872,46 +872,180 @@ while running:
                 golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
                 golclub4.rect.bottom = downmostbox+200
                 golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+                gamestate = "fight"
+                linestopped = False
+                continue
 
-        if golclub.rect.right >= rightmostbox+200:
-            golclub.rect.left = leftmostbox-200
-            golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+            if now-last >= 1500:
+                screen.blit(golclub.image, (golclub.rect.x,golclub.rect.y))
+                golclub.move(5)
+                if round >= 2:
+                    screen.blit(golclub2.image, (golclub2.rect.x,golclub2.rect.y))
+                    golclub2.move(-5)
+                if round >= 3:
+                    screen.blit(golclub3.image, (golclub3.rect.x,golclub3.rect.y))
+                    golclub3.move(5)
+                if round >= 4:
+                    screen.blit(golclub4.image, (golclub4.rect.x,golclub4.rect.y))
+                    golclub4.move(-5)
+                if utheart.rect.colliderect(golclub.rect) or utheart.rect.colliderect(golclub2.rect) or utheart.rect.colliderect(golclub3.rect) or utheart.rect.colliderect(golclub4.rect):
+                    player.health -= 2
+                    if player.health == 0:
+                        running = False
+                        break
+                    utheart.rect.center = [SCREEN_WIDTH/2, SCREEN_HEIGHT/2]
+                    golclub.rect.left = leftmostbox-200
+                    golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+                    golclub2.rect.right = rightmostbox+200
+                    golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+                    golclub3.rect.top = upmostbox-200
+                    golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+                    golclub4.rect.bottom = downmostbox+200
+                    golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
 
-        if golclub2.rect.left <= leftmostbox-200:
-            golclub2.rect.right = rightmostbox+200
-            golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+            if golclub.rect.right >= rightmostbox+200:
+                golclub.rect.left = leftmostbox-200
+                golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
 
-        if golclub3.rect.bottom >= downmostbox+200:
-            golclub3.rect.top = upmostbox-200
-            golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+            if golclub2.rect.left <= leftmostbox-200:
+                golclub2.rect.right = rightmostbox+200
+                golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
 
-        if golclub4.rect.top <= upmostbox-200:
-            golclub4.rect.bottom = downmostbox+200
-            golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+            if golclub3.rect.bottom >= downmostbox+200:
+                golclub3.rect.top = upmostbox-200
+                golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
 
-        screen.blit(utheart.image, (utheart.rect.x, utheart.rect.y))
+            if golclub4.rect.top <= upmostbox-200:
+                golclub4.rect.bottom = downmostbox+200
+                golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-                break
+            screen.blit(utheart.image, (utheart.rect.x, utheart.rect.y))
 
-        key = pygame.key.get_pressed()
-        
-        if key[pygame.K_UP]:
-            utheart.rect.y -= 6
-        elif key[pygame.K_DOWN]:
-            utheart.rect.y += 6
-        elif key[pygame.K_LEFT]:
-            utheart.rect.x -= 6
-        elif key[pygame.K_RIGHT]:
-            utheart.rect.x += 6
-        
-        pygame.display.flip()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
 
-        clock.tick(60)
+            key = pygame.key.get_pressed()
+            
+            if key[pygame.K_UP]:
+                utheart.rect.y -= 6
+            elif key[pygame.K_DOWN]:
+                utheart.rect.y += 6
+            elif key[pygame.K_LEFT]:
+                utheart.rect.x -= 6
+            elif key[pygame.K_RIGHT]:
+                utheart.rect.x += 6
+            
+            pygame.display.flip()
 
-        now = pygame.time.get_ticks()
+            clock.tick(60)
+
+            now = pygame.time.get_ticks()
+
+        elif gamestats["currentmonster"] == golem:
+            screen.fill("black")
+
+            golem.idleanimation()
+
+            screen.blit(golem.image, (golem.fakex, golem.fakey))
+
+            tshb.upd()
+            tshb.drawit()
+
+            if gamestats["currentmonster"] == golem:
+                monstahb.upd()
+                monstahb.drawit()
+            elif gamestats["currentmonster"] == birb:
+                birbhb.upd()
+                birbhb.drawit()
+
+            utheart.checks()
+
+            pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-160,SCREEN_HEIGHT/2-160,320,320))
+
+            pygame.draw.rect(screen, (0,0,0), (SCREEN_WIDTH/2-150,SCREEN_HEIGHT/2-150,300,300))
+
+            if now-newlast >= 11500:
+                utheart.rect.center = [SCREEN_WIDTH/2, SCREEN_HEIGHT/2]
+                golclub.rect.left = leftmostbox-200
+                golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+                golclub2.rect.right = rightmostbox+200
+                golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+                golclub3.rect.top = upmostbox-200
+                golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+                golclub4.rect.bottom = downmostbox+200
+                golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+                gamestate = "fight"
+                linestopped = False
+                continue
+
+            if now-last >= 1500:
+                screen.blit(golclub.image, (golclub.rect.x,golclub.rect.y))
+                golclub.move(5)
+                if round >= 2:
+                    screen.blit(golclub2.image, (golclub2.rect.x,golclub2.rect.y))
+                    golclub2.move(-5)
+                if round >= 3:
+                    screen.blit(golclub3.image, (golclub3.rect.x,golclub3.rect.y))
+                    golclub3.move(5)
+                if round >= 4:
+                    screen.blit(golclub4.image, (golclub4.rect.x,golclub4.rect.y))
+                    golclub4.move(-5)
+                if utheart.rect.colliderect(golclub.rect) or utheart.rect.colliderect(golclub2.rect) or utheart.rect.colliderect(golclub3.rect) or utheart.rect.colliderect(golclub4.rect):
+                    player.health -= 2
+                    if player.health == 0:
+                        running = False
+                        break
+                    utheart.rect.center = [SCREEN_WIDTH/2, SCREEN_HEIGHT/2]
+                    golclub.rect.left = leftmostbox-200
+                    golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+                    golclub2.rect.right = rightmostbox+200
+                    golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+                    golclub3.rect.top = upmostbox-200
+                    golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+                    golclub4.rect.bottom = downmostbox+200
+                    golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+
+            if golclub.rect.right >= rightmostbox+200:
+                golclub.rect.left = leftmostbox-200
+                golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+
+            if golclub2.rect.left <= leftmostbox-200:
+                golclub2.rect.right = rightmostbox+200
+                golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+
+            if golclub3.rect.bottom >= downmostbox+200:
+                golclub3.rect.top = upmostbox-200
+                golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+
+            if golclub4.rect.top <= upmostbox-200:
+                golclub4.rect.bottom = downmostbox+200
+                golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+
+            screen.blit(utheart.image, (utheart.rect.x, utheart.rect.y))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
+
+            key = pygame.key.get_pressed()
+            
+            if key[pygame.K_UP]:
+                utheart.rect.y -= 6
+            elif key[pygame.K_DOWN]:
+                utheart.rect.y += 6
+            elif key[pygame.K_LEFT]:
+                utheart.rect.x -= 6
+            elif key[pygame.K_RIGHT]:
+                utheart.rect.x += 6
+            
+            pygame.display.flip()
+
+            clock.tick(60)
+
+            now = pygame.time.get_ticks()
 
     elif gamestate == "shop":
 
