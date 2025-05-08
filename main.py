@@ -235,10 +235,10 @@ class UPSIDEDOWNPIPE:
 leftmostbox = SCREEN_WIDTH/2-150
 
 mypipe = PIPE()
-mypipe.rect.left = leftmostbox-200
+mypipe.rect.left = leftmostbox
 
 myupsidedownpipe = UPSIDEDOWNPIPE()
-myupsidedownpipe.rect.left = leftmostbox-200
+myupsidedownpipe.rect.left = leftmostbox
 
 class BIGBUTTTON:
     def __init__(self,image):
@@ -370,6 +370,8 @@ trrect.x = SCREEN_WIDTH/2-trrect.w/2
 trrect.y = SCREEN_HEIGHT/2-trrect.h/2
 
 birb.rect.y = 700
+
+viswidth = 0
 
 while running:
     if gamestate == "main":
@@ -655,7 +657,7 @@ while running:
                 gamestate = "main"
                 if gamestats["currentmonster"] == golem:
                     player.isgolemdefeated = True
-                else:
+                elif gamestats["currentmonster"] == birb:
                     player.isbirddefeated = True
                 tempx = SCREEN_WIDTH/2-275
                 linegoinleft = False
@@ -693,7 +695,7 @@ while running:
                     gamestate = "main"
                     if gamestats["currentmonster"] == golem:
                         player.isgolemdefeated = True
-                    else:
+                    elif gamestats["currentmonster"] == birb:
                         player.isbirddefeated = True
                     tempx = SCREEN_WIDTH/2-275
                     linegoinleft = False
@@ -797,7 +799,7 @@ while running:
                         gamestate = "main"
                         if gamestats["currentmonster"] == golem:
                             player.isgolemdefeated = True
-                        else:
+                        elif gamestats["currentmonster"] == birb:
                             player.isbirddefeated = True
                         tempx = SCREEN_WIDTH/2-275
                         linegoinleft = False
@@ -901,7 +903,7 @@ while running:
                 myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(1,250)))
                 myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
                 myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
-                myupsidedownpipe.rect.left = leftmostbox-200
+                myupsidedownpipe.rect.left = leftmostbox
 
             birb.idleanimation()
 
@@ -928,11 +930,11 @@ while running:
                 mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
                 mypipe.rect = mypipe.image.get_rect()
                 mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
-                mypipe.rect.left = leftmostbox-200
+                mypipe.rect.left = leftmostbox
                 myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(1,250)))
                 myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
                 myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
-                myupsidedownpipe.rect.left = leftmostbox-200
+                myupsidedownpipe.rect.left = leftmostbox
                 """
                 golclub2.rect.right = rightmostbox+200
                 golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
@@ -970,15 +972,14 @@ while running:
                     if player.health == 0:
                         running = False
                         break
-                    utheart.rect.center = [SCREEN_WIDTH/2, SCREEN_HEIGHT/2]
                     mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
                     mypipe.rect = mypipe.image.get_rect()
                     mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
-                    mypipe.rect.left = leftmostbox-200
+                    mypipe.rect.left = leftmostbox
                     myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(20,250)))
                     myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
                     myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
-                    myupsidedownpipe.rect.left = leftmostbox-200
+                    myupsidedownpipe.rect.left = leftmostbox
                     """
                     golclub2.rect.right = rightmostbox+200
                     golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
@@ -988,17 +989,17 @@ while running:
                     golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
                     """
 
-            if mypipe.rect.right >= rightmostbox+200:
+            if mypipe.rect.right >= rightmostbox:
                 mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
                 mypipe.rect = mypipe.image.get_rect()
                 mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
-                mypipe.rect.left = leftmostbox-200
+                mypipe.rect.left = leftmostbox
 
-            if myupsidedownpipe.rect.right >= rightmostbox+200:
+            if myupsidedownpipe.rect.right >= rightmostbox:
                 myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(20,250)))
                 myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
                 myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
-                myupsidedownpipe.rect.left = leftmostbox-200
+                myupsidedownpipe.rect.left = leftmostbox
 
             """
 
@@ -1094,7 +1095,6 @@ while running:
                     if player.health == 0:
                         running = False
                         break
-                    utheart.rect.center = [SCREEN_WIDTH/2, SCREEN_HEIGHT/2]
                     golclub.rect.left = leftmostbox-200
                     golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
                     golclub2.rect.right = rightmostbox+200
