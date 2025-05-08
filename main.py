@@ -2,7 +2,9 @@ import pygame
 import random
 import textwrap
 from pytmx import *
-
+from pygame_aseprite_animation import *
+from pytmx.util_pygame import load_pygame
+from top_down_sprites import *
 inshop = {"Pie": ["Pie",5,1], "Cake":["Cake",10,2], "Amazing":["Amazing",15,3]}
 
 wrapper = textwrap.TextWrapper(width=30)
@@ -12,13 +14,30 @@ pygame.font.init()
 
 compinf = pygame.display.Info()
 
-SCREEN_WIDTH = compinf.current_w
-SCREEN_HEIGHT = compinf.current_h
+SCREEN_WIDTH = 1280 # compinf.current_w
+SCREEN_HEIGHT = 720 # compinf.current_h
 
 wrapwidth = 2
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
-# tmx_data = load_pygame('map/topdownmap.tmx')
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), )#pygame.FULLSCREEN)
+tmx_data = load_pygame('map/maptake2.tmx')
+
+cameraX = 0
+cameraY = 0
+
+for layer in tmx_data.layers:
+    if hasattr (layer, 'data'):
+        print(layer)
+        for x,y,surf in layer.tiles():
+            pos = (x * tmx_data.tilewidth, y * tmx_data.tileheight)
+            Tile(pos = pos, surf = surf, groups = sprite_group)
+
+for obj in tmx_data.objects:
+    pos = (obj.x, obj.y)
+    if obj.image:
+        Tile(pos = pos, surf = obj.image, groups = sprite_group)
+
+
 class hitbutton:
     def __init__(self, color, x, y, width, height):
         self.color = color
@@ -346,8 +365,13 @@ trrect.y = SCREEN_HEIGHT/2-trrect.h/2
 birb.rect.y = 700
 
 while running:
+    if player.rect.x > SCREEN_WIDTH /4 *3:
+        cameraX -= 5
+    elif player.rect.x < SCREEN_WIDTH / 6:
+        cameraX += 5
     if gamestate == "main":
         screen.fill((0,0,0))
+        sprite_group.draw(screen)
 
         thisfont = pygame.font.SysFont("Arial", 30)
 

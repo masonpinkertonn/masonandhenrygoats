@@ -20,6 +20,8 @@ License along with pytmx.  If not, see <http://www.gnu.org/licenses/>.
 import itertools
 import logging
 from typing import Optional, Union, List
+import os as os
+
 
 import pytmx
 from pytmx.pytmx import ColorLike, PointLike
@@ -124,6 +126,22 @@ def pygame_image_loader(filename: str, colorkey: Optional[ColorLike], **kwargs):
         function to load tile images
 
     """
+    if filename.endswith(".aseprite"):
+        # Replace the .aseprite extension with .png
+        filename = os.path.splitext(filename)[0] + ".png"
+        print(f"Falling back to .png: {filename}")
+
+
+    try:
+        image = pygame.image.load(filename)
+    except pygame.error as e:
+        print(f"Error loading image: {filename} - {e}")
+        # Create a placeholder surface for unsupported images
+        image = pygame.Surface((32, 32))  # Default size for placeholder
+        image.fill((255, 0, 255))  # Magenta color to indicate a missing image
+
+    
+
     if colorkey:
         colorkey = pygame.Color("#{0}".format(colorkey))
 
