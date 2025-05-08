@@ -9,6 +9,7 @@ wrapper = textwrap.TextWrapper(width=30)
 
 pygame.init()
 pygame.font.init()
+pygame.mixer.init()
 
 compinf = pygame.display.Info()
 
@@ -217,16 +218,27 @@ gamestate = "main"
 class PIPE:
     def __init__(self):
         self.image = pygame.image.load('pipe.png')
-        self.image = pygame.transform.scale(self.image, (40, 100))
+        self.image = pygame.transform.scale(self.image, (40, random.randint(20,250)))
         self.rect = self.image.get_rect()
-        self.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+        self.rect.bottom = SCREEN_HEIGHT/2-150+300
     def move(self, vel):
         self.rect.x += vel
-
+class UPSIDEDOWNPIPE:
+    def __init__(self):
+        self.image = pygame.image.load('pipe.png')
+        self.image = pygame.transform.scale(self.image, (40,random.randint(20,250)))
+        self.image = pygame.transform.rotate(self.image, 180)
+        self.rect = self.image.get_rect()
+        self.rect.top = SCREEN_HEIGHT/2-150
+    def move(self, vel):
+        self.rect.x += vel
 leftmostbox = SCREEN_WIDTH/2-150
 
 mypipe = PIPE()
 mypipe.rect.left = leftmostbox-200
+
+myupsidedownpipe = UPSIDEDOWNPIPE()
+myupsidedownpipe.rect.left = leftmostbox-200
 
 class BIGBUTTTON:
     def __init__(self,image):
@@ -526,6 +538,7 @@ while running:
                     golemdialogueline = 0
                     gamestate = "fight"
                     gamestats["currentmonster"] = golem
+                    e_button.isshowinggolemdialogue = False
                     continue
                 golemdialogueline += 1
         if key[pygame.K_e] and e_button.isshowingbirddialogue:
@@ -535,6 +548,7 @@ while running:
                     newdialogueline = 0
                     gamestate="fight"
                     gamestats["currentmonster"] = birb
+                    e_button.isshowingbirddialogue = False
                     continue
                 newdialogueline += 1
         if key[pygame.K_e] and e_button.isshowingshop:
@@ -639,10 +653,17 @@ while running:
                 gamestats["currentmonster"].health -= 3
             if gamestats["currentmonster"].health <= 0:
                 gamestate = "main"
-                player.isgolemdefeated = True
+                if gamestats["currentmonster"] == golem:
+                    player.isgolemdefeated = True
+                else:
+                    player.isbirddefeated = True
+                tempx = SCREEN_WIDTH/2-275
+                linegoinleft = False
+                linestopped = False
                 gamestats["currentmonster"].health = 15
                 gamestats["money"] += 5
                 round = 0
+                last = pygame.time.get_ticks()
                 continue
             #print("ok")
             tempx = SCREEN_WIDTH/2-275
@@ -670,10 +691,17 @@ while running:
                     gamestats["currentmonster"].health -= 3
                 if gamestats["currentmonster"].health <= 0:
                     gamestate = "main"
-                    player.isgolemdefeated = True
+                    if gamestats["currentmonster"] == golem:
+                        player.isgolemdefeated = True
+                    else:
+                        player.isbirddefeated = True
+                    tempx = SCREEN_WIDTH/2-275
+                    linegoinleft = False
+                    linestopped = False
                     gamestats["currentmonster"].health = 15
                     gamestats["money"] += 5
                     round = 0
+                    last = pygame.time.get_ticks()
                     continue
                 #print("ok")
                 tempx = SCREEN_WIDTH/2-275
@@ -709,7 +737,7 @@ while running:
 
         matchcol = "white"
 
-        if round >= 3:
+        if round >= 0:
             matchcol = "yellow"
 
         myman = 0
@@ -767,9 +795,17 @@ while running:
                         continue
                     elif matchcol == "yellow":
                         gamestate = "main"
-                        player.isgolemdefeated = True
-                        golem.health = 15
+                        if gamestats["currentmonster"] == golem:
+                            player.isgolemdefeated = True
+                        else:
+                            player.isbirddefeated = True
+                        tempx = SCREEN_WIDTH/2-275
+                        linegoinleft = False
+                        linestopped = False
+                        gamestats["currentmonster"].health = 15
+                        gamestats["money"] += 5
                         round = 0
+                        last = pygame.time.get_ticks()
                         continue
 
         pygame.display.flip()
@@ -859,6 +895,14 @@ while running:
         if gamestats["currentmonster"] == birb:
             screen.fill("black")
 
+            while mypipe.rect.h + myupsidedownpipe.rect.h > 250 or mypipe.rect.h + myupsidedownpipe.rect.h < 225:
+                myupsidedownpipe.image = pygame.image.load('pipe.png')
+                myupsidedownpipe.image = pygame.transform.rotate(myupsidedownpipe.image, 180)
+                myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(1,250)))
+                myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
+                myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
+                myupsidedownpipe.rect.left = leftmostbox-200
+
             birb.idleanimation()
 
             screen.blit(birb.image, (birb.fakex, birb.fakey))
@@ -881,8 +925,14 @@ while running:
 
             if now-newlast >= 11500:
                 utheart.rect.center = [SCREEN_WIDTH/2, SCREEN_HEIGHT/2]
+                mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
+                mypipe.rect = mypipe.image.get_rect()
+                mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
                 mypipe.rect.left = leftmostbox-200
-                mypipe.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+                myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(1,250)))
+                myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
+                myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
+                myupsidedownpipe.rect.left = leftmostbox-200
                 """
                 golclub2.rect.right = rightmostbox+200
                 golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
@@ -892,12 +942,16 @@ while running:
                 golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
                 """
                 gamestate = "fight"
+                tempx = SCREEN_WIDTH/2-275
+                linegoinleft = False
                 linestopped = False
                 continue
 
             if now-last >= 1500:
                 screen.blit(mypipe.image, (mypipe.rect.x,mypipe.rect.y))
-                mypipe.move(5)
+                mypipe.move((round+1)*1.5)
+                screen.blit(myupsidedownpipe.image, (myupsidedownpipe.rect.x, myupsidedownpipe.rect.y))
+                myupsidedownpipe.move((round+1)*1.5)
                 """
                 if round >= 2:
                     screen.blit(golclub2.image, (golclub2.rect.x,golclub2.rect.y))
@@ -909,14 +963,22 @@ while running:
                     screen.blit(golclub4.image, (golclub4.rect.x,golclub4.rect.y))
                     golclub4.move(-5)
                 """
-                if utheart.rect.colliderect(mypipe.rect):
+                if utheart.rect.colliderect(mypipe.rect) or utheart.rect.colliderect(myupsidedownpipe.rect):
+                    pygame.mixer.Sound.play(pygame.mixer.Sound("metalpipe.mp3"))
+                    pygame.mixer.music.stop()
                     player.health -= 2
                     if player.health == 0:
                         running = False
                         break
                     utheart.rect.center = [SCREEN_WIDTH/2, SCREEN_HEIGHT/2]
+                    mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
+                    mypipe.rect = mypipe.image.get_rect()
+                    mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
                     mypipe.rect.left = leftmostbox-200
-                    mypipe.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+                    myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(20,250)))
+                    myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
+                    myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
+                    myupsidedownpipe.rect.left = leftmostbox-200
                     """
                     golclub2.rect.right = rightmostbox+200
                     golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
@@ -927,14 +989,18 @@ while running:
                     """
 
             if mypipe.rect.right >= rightmostbox+200:
+                mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
+                mypipe.rect = mypipe.image.get_rect()
+                mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
                 mypipe.rect.left = leftmostbox-200
-                mypipe.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+
+            if myupsidedownpipe.rect.right >= rightmostbox+200:
+                myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(20,250)))
+                myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
+                myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
+                myupsidedownpipe.rect.left = leftmostbox-200
 
             """
-
-            if golclub2.rect.left <= leftmostbox-200:
-                golclub2.rect.right = rightmostbox+200
-                golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
 
             if golclub3.rect.bottom >= downmostbox+200:
                 golclub3.rect.top = upmostbox-200
@@ -1004,6 +1070,8 @@ while running:
                 golclub4.rect.bottom = downmostbox+200
                 golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
                 gamestate = "fight"
+                tempx = SCREEN_WIDTH/2-275
+                linegoinleft = False
                 linestopped = False
                 continue
 
@@ -1020,6 +1088,8 @@ while running:
                     screen.blit(golclub4.image, (golclub4.rect.x,golclub4.rect.y))
                     golclub4.move(-5)
                 if utheart.rect.colliderect(golclub.rect) or utheart.rect.colliderect(golclub2.rect) or utheart.rect.colliderect(golclub3.rect) or utheart.rect.colliderect(golclub4.rect):
+                    pygame.mixer.Sound.play(pygame.mixer.Sound("vine-boom.mp3"))
+                    pygame.mixer.music.stop()
                     player.health -= 2
                     if player.health == 0:
                         running = False
@@ -1125,6 +1195,7 @@ while running:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if returnbutton.rect.collidepoint(mouse):
                     gamestate="main"
+                    last = pygame.time.get_ticks()
                     continue
                 for i in myrects:
                     if i.collidepoint(mouse):
