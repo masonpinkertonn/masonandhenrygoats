@@ -15,12 +15,12 @@ pygame.mixer.init()
 
 compinf = pygame.display.Info()
 
-SCREEN_WIDTH = 1280 # compinf.current_w
-SCREEN_HEIGHT = 720 # compinf.current_h
+SCREEN_WIDTH = compinf.current_w
+SCREEN_HEIGHT = compinf.current_h
 
 wrapwidth = 2
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), )#pygame.FULLSCREEN)
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
 tmx_data = load_pygame('map/maptake2.tmx')
 
 cameraX = 0
@@ -251,13 +251,25 @@ class UPSIDEDOWNPIPE:
         self.rect.top = SCREEN_HEIGHT/2-150
     def move(self, vel):
         self.rect.x += vel
+class PIPE3:
+    def __init__(self):
+        self.image = pygame.image.load('pipe.png')
+        self.image = pygame.transform.scale(self.image, (40, random.randint(20,250)))
+        self.rect = self.image.get_rect()
+        self.rect.bottom = SCREEN_HEIGHT/2-150+300
+    def move(self, vel):
+        self.rect.x -= vel
 leftmostbox = SCREEN_WIDTH/2-150
+rightmostbox = SCREEN_WIDTH/2+150
 
 mypipe = PIPE()
-mypipe.rect.left = leftmostbox
+mypipe.rect.left = leftmostbox-200
 
 myupsidedownpipe = UPSIDEDOWNPIPE()
-myupsidedownpipe.rect.left = leftmostbox
+myupsidedownpipe.rect.left = leftmostbox-200
+
+my3rdleg = PIPE3()
+my3rdleg.rect.right = rightmostbox+200
 
 class BIGBUTTTON:
     def __init__(self,image):
@@ -389,8 +401,6 @@ trrect.x = SCREEN_WIDTH/2-trrect.w/2
 trrect.y = SCREEN_HEIGHT/2-trrect.h/2
 
 birb.rect.y = 700
-
-viswidth = 0
 
 while running:
     if player.rect.x > SCREEN_WIDTH /4 *3:
@@ -927,7 +937,7 @@ while running:
                 myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(1,250)))
                 myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
                 myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
-                myupsidedownpipe.rect.left = leftmostbox
+                myupsidedownpipe.rect.left = leftmostbox-200
 
             birb.idleanimation()
 
@@ -954,11 +964,11 @@ while running:
                 mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
                 mypipe.rect = mypipe.image.get_rect()
                 mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
-                mypipe.rect.left = leftmostbox
+                mypipe.rect.left = leftmostbox-200
                 myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(1,250)))
                 myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
                 myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
-                myupsidedownpipe.rect.left = leftmostbox
+                myupsidedownpipe.rect.left = leftmostbox-200
                 """
                 golclub2.rect.right = rightmostbox+200
                 golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
@@ -974,9 +984,11 @@ while running:
                 continue
 
             if now-last >= 1500:
-                screen.blit(mypipe.image, (mypipe.rect.x,mypipe.rect.y))
+                if mypipe.rect.x >= SCREEN_WIDTH/2-150 and mypipe.rect.right <= SCREEN_WIDTH/2+150:
+                    screen.blit(mypipe.image, (mypipe.rect.x,mypipe.rect.y))
                 mypipe.move((round+1)*1.5)
-                screen.blit(myupsidedownpipe.image, (myupsidedownpipe.rect.x, myupsidedownpipe.rect.y))
+                if myupsidedownpipe.rect.x >= SCREEN_WIDTH/2-150 and myupsidedownpipe.rect.right <= SCREEN_WIDTH/2+150:
+                    screen.blit(myupsidedownpipe.image, (myupsidedownpipe.rect.x, myupsidedownpipe.rect.y))
                 myupsidedownpipe.move((round+1)*1.5)
                 """
                 if round >= 2:
@@ -999,11 +1011,11 @@ while running:
                     mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
                     mypipe.rect = mypipe.image.get_rect()
                     mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
-                    mypipe.rect.left = leftmostbox
+                    mypipe.rect.left = leftmostbox-200
                     myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(20,250)))
                     myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
                     myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
-                    myupsidedownpipe.rect.left = leftmostbox
+                    myupsidedownpipe.rect.left = leftmostbox-200
                     """
                     golclub2.rect.right = rightmostbox+200
                     golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
@@ -1013,17 +1025,17 @@ while running:
                     golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
                     """
 
-            if mypipe.rect.right >= rightmostbox:
+            if mypipe.rect.right >= rightmostbox+200:
                 mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
                 mypipe.rect = mypipe.image.get_rect()
                 mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
-                mypipe.rect.left = leftmostbox
+                mypipe.rect.left = leftmostbox-200
 
-            if myupsidedownpipe.rect.right >= rightmostbox:
+            if myupsidedownpipe.rect.right >= rightmostbox+200:
                 myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(20,250)))
                 myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
                 myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
-                myupsidedownpipe.rect.left = leftmostbox
+                myupsidedownpipe.rect.left = leftmostbox-200
 
             """
 
@@ -1101,16 +1113,20 @@ while running:
                 continue
 
             if now-last >= 1500:
-                screen.blit(golclub.image, (golclub.rect.x,golclub.rect.y))
+                if golclub.rect.x >= SCREEN_WIDTH/2-150 and golclub.rect.right <= SCREEN_WIDTH/2+150:
+                    screen.blit(golclub.image, (golclub.rect.x,golclub.rect.y))
                 golclub.move(5)
                 if round >= 2:
-                    screen.blit(golclub2.image, (golclub2.rect.x,golclub2.rect.y))
+                    if golclub2.rect.x >= SCREEN_WIDTH/2-150 and golclub2.rect.right <= SCREEN_WIDTH/2+150:
+                        screen.blit(golclub2.image, (golclub2.rect.x,golclub2.rect.y))
                     golclub2.move(-5)
                 if round >= 3:
-                    screen.blit(golclub3.image, (golclub3.rect.x,golclub3.rect.y))
+                    if golclub3.rect.x >= SCREEN_WIDTH/2-150 and golclub3.rect.right <= SCREEN_WIDTH/2+150:
+                        screen.blit(golclub3.image, (golclub3.rect.x,golclub3.rect.y))
                     golclub3.move(5)
                 if round >= 4:
-                    screen.blit(golclub4.image, (golclub4.rect.x,golclub4.rect.y))
+                    if golclub4.rect.x >= SCREEN_WIDTH/2-150 and golclub4.rect.right <= SCREEN_WIDTH/2+150:
+                        screen.blit(golclub4.image, (golclub4.rect.x,golclub4.rect.y))
                     golclub4.move(-5)
                 if utheart.rect.colliderect(golclub.rect) or utheart.rect.colliderect(golclub2.rect) or utheart.rect.colliderect(golclub3.rect) or utheart.rect.colliderect(golclub4.rect):
                     pygame.mixer.Sound.play(pygame.mixer.Sound("vine-boom.mp3"))
