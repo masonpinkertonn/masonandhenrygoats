@@ -504,7 +504,7 @@ while running:
 
     r1 = pygame.draw.rect(screen, "red", (player.rect.x,player.rect.y,player.rect.w,player.rect.h))
     r2 = pygame.draw.rect(screen, "blue", (tscrate.rect.x,tscrate.rect.y,tscrate.rect.w,tscrate.rect.h))
-    map.draw_map(screen)
+    map.draw_map(screen, cameraX, cameraY)
 
     #print(needmoreboolets)
 
@@ -592,18 +592,18 @@ while running:
         #player.changey()
         
         player.checkcoly(map.tiles)
-        player.rect.y -= tempvel
-        tempvel -= player.y_gravity
-        if tempvel > 0:
+        player.rect.y -= player.tempvel
+        player.tempvel -= player.y_gravity
+        if player.tempvel > 0:
             player.isposyvel = 1
-        elif tempvel < 0:
+        elif player.tempvel < 0:
             player.isposyvel = -1
-        elif tempvel == 0:
+        elif player.tempvel == 0:
             player.isposyvel = 0
         if player.onground:
             player.onground = True
             player.isjumping = False
-            tempvel = 0
+            player.tempvel = 0
         print(player.isposyvel)
     else:
         player.onground = True

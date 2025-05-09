@@ -5,6 +5,7 @@ from pytmx import *
 from pygame_aseprite_animation import *
 from pytmx.util_pygame import load_pygame
 from top_down_sprites import *
+import Camera2
 inshop = {"Pie": ["Pie",5,1], "Cake":["Cake",10,2], "Amazing":["Amazing",15,3]}
 
 wrapper = textwrap.TextWrapper(width=30)
@@ -391,15 +392,23 @@ trrect.y = SCREEN_HEIGHT/2-trrect.h/2
 birb.rect.y = 700
 
 viswidth = 0
+camera_group = Camera2.CameraGroup(tmx_data)
 
+# Add the player to the camera group
+player = Player()
+camera_group.add(player)
 while running:
-    if player.rect.x > SCREEN_WIDTH /4 *3:
+    """if player.rect.x > SCREEN_WIDTH /4 *3:
         cameraX -= 5
     elif player.rect.x < SCREEN_WIDTH / 6:
-        cameraX += 5
+        cameraX += 5"""
     if gamestate == "main":
-        screen.fill((0,0,0))
+        # Camera.box_target_camera(Player.rect, SCREEN_WIDTH, SCREEN_HEIGHT)
         sprite_group.draw(screen)
+        camera_group.custom_draw(player)
+
+        pygame.display.flip()
+        clock.tick(60)
 
         thisfont = pygame.font.SysFont("Arial", 30)
 
@@ -426,14 +435,14 @@ while running:
 
         screen.blit(player.image, (player.rect.x, player.rect.y))
 
-        if player.rect.right >= SCREEN_WIDTH:
+        """if player.rect.right >= SCREEN_WIDTH:
             player.rect.right = SCREEN_WIDTH
         if player.rect.x <= 0:
             player.rect.x = 0
         if player.rect.y <= 0:
             player.rect.y = 0
         if player.rect.bottom >= SCREEN_HEIGHT:
-            player.rect.bottom = SCREEN_HEIGHT
+            player.rect.bottom = SCREEN_HEIGHT"""
 
         expansion = player.rect.inflate(50,50)
 
