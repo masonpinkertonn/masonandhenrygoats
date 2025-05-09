@@ -22,8 +22,8 @@ pygame.mixer.init()
 
 compinf = pygame.display.Info()
 
-SCREEN_WIDTH = 1280 # compinf.current_w
-SCREEN_HEIGHT = 720 # compinf.current_h
+SCREEN_WIDTH = 1280 #compinf.current_w #1280
+SCREEN_HEIGHT = 720 #compinf.current_h #720
 
 wrapwidth = 2
 
@@ -425,7 +425,7 @@ sansbutt = NPC(sansbutt_image, SCREEN_WIDTH - 235, SCREEN_HEIGHT // 2 - 150)
 truesans = NPC(truesans_image, SCREEN_WIDTH // 2 - 1024 // 10, SCREEN_HEIGHT // 2 - 1346 // 10)
 
 # Add NPCs to the list
-npc_list = [golem, birb, sansbutt, ]
+npc_list = [golem, birb, sansbutt]
 pygame.mixer.Sound.play(pygame.mixer.Sound("Balatro - Complete Original Soundtrack (Official).mp3"))
 while running:
     """if player.rect.x > SCREEN_WIDTH /4 *3:
