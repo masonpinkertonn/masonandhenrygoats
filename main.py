@@ -6,20 +6,26 @@ from pygame_aseprite_animation import *
 from pytmx.util_pygame import load_pygame
 from top_down_sprites import *
 from Camera2 import *
+pygame.init()
+pygame.font.init()
+pygame.mixer.init()
 image_cache={}
 inshop = {"Pie": ["Pie",5,1], "Cake":["Cake",10,2], "Amazing":["Amazing",15,3]}
 # Preload music for each gamestate
 music_files = {
     "main": "Balatro - Complete Original Soundtrack (Official).mp3",
-    "fight": "thick_of_it_by_ksi.mp3",
+    "fight": "Doom Eternal OST - The Only Thing They Fear Is You (Mick Gordon) [Doom Eternal Theme].mp3",
 }
 current_music = None
 wrapper = textwrap.TextWrapper(width=30)
 
-pygame.init()
-pygame.font.init()
-pygame.mixer.init()
 
+
+sound_effects_channel = pygame.mixer.Channel(1)
+vine_boom_sound = pygame.mixer.Sound("vine-boom.mp3")
+vine_boom_sound.set_volume(1.0)  
+metal_pipe_sound = pygame.mixer.Sound("metalpipe.mp3")
+metal_pipe_sound.set_volume(1.0)  
 compinf = pygame.display.Info()
 
 SCREEN_WIDTH = 1280 #compinf.current_w #1280
@@ -610,7 +616,7 @@ while running:
         if not(player.ismoving):
             player.idleanimation()
         if key[pygame.K_e] and e_button.isshowinggolemdialogue:
-            if now - last >= 1500:
+            if now - last >= 700:
                 last = pygame.time.get_ticks()
                 if golemdialogueline == 5:
                     golemdialogueline = 0
@@ -620,7 +626,7 @@ while running:
                     continue
                 golemdialogueline += 1
         if key[pygame.K_e] and e_button.isshowingbirddialogue:
-            if now - last >= 1500:
+            if now - last >= 700:
                 last = pygame.time.get_ticks()
                 if newdialogueline == 5:
                     newdialogueline = 0
@@ -641,9 +647,10 @@ while running:
 
     elif gamestate == "fight":
         if current_music != "fight":
-            pygame.mixer.music.stop()
-            pygame.mixer.music.load(music_files["fight"])
-            pygame.mixer.music.play(-1)
+            if pygame.mixer.music.get_busy():  # Check if music is currently playing
+                pygame.mixer.music.fadeout(500)  # Fade out the current music over 500ms
+            pygame.mixer.music.load(music_files["fight"])  # Load the fight music
+            pygame.mixer.music.play(-1)  # Play the fight music in a loop
             current_music = "fight"
         screen.fill("black")
 
@@ -1047,8 +1054,7 @@ while running:
                     golclub4.move(-5)
                 """
                 if utheart.rect.colliderect(mypipe.rect) or utheart.rect.colliderect(myupsidedownpipe.rect):
-                    pygame.mixer.Sound.play(pygame.mixer.Sound("metalpipe.mp3"))
-                    pygame.mixer.music.stop()
+                    sound_effects_channel.play(metal_pipe_sound)
                     player.health -= 2
                     if player.health == 0:
                         running = False
@@ -1170,8 +1176,7 @@ while running:
                     screen.blit(golclub4.image, (golclub4.rect.x,golclub4.rect.y))
                     golclub4.move(-5)
                 if utheart.rect.colliderect(golclub.rect) or utheart.rect.colliderect(golclub2.rect) or utheart.rect.colliderect(golclub3.rect) or utheart.rect.colliderect(golclub4.rect):
-                    pygame.mixer.Sound.play(pygame.mixer.Sound("vine-boom.mp3"))
-                    pygame.mixer.music.stop()
+                    sound_effects_channel.play(vine_boom_sound)
                     player.health -= 2
                     if player.health == 0:
                         running = False
