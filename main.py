@@ -5,9 +5,15 @@ from pytmx import *
 from pygame_aseprite_animation import *
 from pytmx.util_pygame import load_pygame
 from top_down_sprites import *
-import Camera2
+from Camera2 import *
+image_cache={}
 inshop = {"Pie": ["Pie",5,1], "Cake":["Cake",10,2], "Amazing":["Amazing",15,3]}
-
+# Preload music for each gamestate
+music_files = {
+    "main": "Balatro - Complete Original Soundtrack (Official).mp3",
+    "fight": "thick_of_it_by_ksi.mp3",
+}
+current_music = None
 wrapper = textwrap.TextWrapper(width=30)
 
 pygame.init()
@@ -26,6 +32,14 @@ tmx_data = load_pygame('map/maptake2.tmx')
 
 cameraX = 0
 cameraY = 0
+def load_image(filename, scale=None):
+    if filename not in image_cache:
+        print(f"Loading image: {filename}")
+        image = pygame.image.load(filename)
+        if scale:
+            image = pygame.transform.scale(image, scale)
+        image_cache[filename] = image
+    return image_cache[filename]
 
 for layer in tmx_data.layers:
     if hasattr (layer, 'data'):
@@ -47,6 +61,7 @@ class hitbutton:
         self.y = y
         self.width = width
         self.height = height
+
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -375,65 +390,93 @@ gamestats = {"currentmonster":golem, "route":"pacifist", "money":0}
 
 playerinv = {}
 
-sansbutt = pygame.image.load("SANS.png")
-#75x100
-sansbutt = pygame.transform.scale(sansbutt, (225,300))
-srect = sansbutt.get_rect()
-srect.x = SCREEN_WIDTH-srect.w-10
-srect.y = SCREEN_HEIGHT/2-srect.h/2
 
-truesans = pygame.image.load("skibidi.png")
-#1024x1346
-truesans = pygame.transform.scale(truesans, (1024/5,1346/5))
-trrect = truesans.get_rect()
-trrect.x = SCREEN_WIDTH/2-trrect.w/2
-trrect.y = SCREEN_HEIGHT/2-trrect.h/2
+
+
 
 birb.rect.y = 700
 
 viswidth = 0
-camera_group = Camera2.CameraGroup(tmx_data)
+camera_group = CameraGroup(tmx_data)
 
 # Add the player to the camera group
 player = Player()
 camera_group.add(player)
+minime = load_image('Wraith_01_Idle_000.png', (50.25, 72.25))
+minigol = load_image('Golem_01_Idle Blinking_000.png', (50.25, 72.25))
+sansbutt = load_image("SANS.png", (225, 300))
+truesans = load_image("skibidi.png", (1024 // 5, 1346 // 5))
+minibird = load_image('birdie000.png', (50.25, 72.25))
+
+#75x100
+srect = sansbutt.get_rect()
+srect.x = SCREEN_WIDTH-srect.w-10
+srect.y = SCREEN_HEIGHT/2-srect.h/2
+#1024x1346
+trrect = truesans.get_rect()
+trrect.x = SCREEN_WIDTH/2-trrect.w/2
+trrect.y = SCREEN_HEIGHT/2-trrect.h/2
+# Load NPC images
+sansbutt_image = load_image("SANS.png", (225, 300))
+truesans_image = load_image("skibidi.png", (1024 // 5, 1346 // 5))
+
+# Create NPCs
+sansbutt = NPC(sansbutt_image, SCREEN_WIDTH - 235, SCREEN_HEIGHT // 2 - 150)
+truesans = NPC(truesans_image, SCREEN_WIDTH // 2 - 1024 // 10, SCREEN_HEIGHT // 2 - 1346 // 10)
+
+# Add NPCs to the list
+npc_list = [golem, birb, sansbutt, ]
+pygame.mixer.Sound.play(pygame.mixer.Sound("Balatro - Complete Original Soundtrack (Official).mp3"))
 while running:
     """if player.rect.x > SCREEN_WIDTH /4 *3:
         cameraX -= 5
     elif player.rect.x < SCREEN_WIDTH / 6:
         cameraX += 5"""
     if gamestate == "main":
+        if current_music != "main":
+            pygame.mixer.music.stop()
+            pygame.mixer.music.load(music_files["main"])
+            pygame.mixer.music.play(-1)  # Loop the music
+        current_music = "main"
+        camera_offset_x = player.rect.centerx - SCREEN_WIDTH // 2
+        camera_offset_y = player.rect.centery - SCREEN_HEIGHT // 2
+        screen.fill((0, 0, 0))
+        # Define camera thresholds
+        CAMERA_THRESHOLD_X = SCREEN_WIDTH // 4
+        CAMERA_THRESHOLD_Y = SCREEN_HEIGHT // 4
+
+        # Calculate camera offset
+        if player.rect.centerx > SCREEN_WIDTH - CAMERA_THRESHOLD_X:
+            camera_offset_x += player.rect.centerx - (SCREEN_WIDTH - CAMERA_THRESHOLD_X)
+        elif player.rect.centerx < CAMERA_THRESHOLD_X:
+            camera_offset_x += player.rect.centerx - CAMERA_THRESHOLD_X
+
+        if player.rect.centery > SCREEN_HEIGHT - CAMERA_THRESHOLD_Y:
+            camera_offset_y += player.rect.centery - (SCREEN_HEIGHT - CAMERA_THRESHOLD_Y)
+        elif player.rect.centery < CAMERA_THRESHOLD_Y:
+            camera_offset_y += player.rect.centery - CAMERA_THRESHOLD_Y
         # Camera.box_target_camera(Player.rect, SCREEN_WIDTH, SCREEN_HEIGHT)
         sprite_group.draw(screen)
         camera_group.custom_draw(player)
+        for npc in npc_list:
+            screen.blit(npc.image, (npc.rect.x, npc.rect.y))
+       # screen.blit(player.image, (player.rect.x, player.rect.y))
 
-        pygame.display.flip()
-        clock.tick(60)
 
         thisfont = pygame.font.SysFont("Arial", 30)
-
         thistxt = "Coins: " + str(gamestats["money"])
-
         mytxt = thisfont.render(thistxt, True, "white")
-
         screen.blit(mytxt, (10,10))
         
         #pygame.draw.rect(screen, "red", (player.rect.x, player.rect.y, player.rect.w, player.rect.h))
 
-        screen.blit(sansbutt, (srect.x,srect.y))
-
-        tempimg = pygame.image.load('Wraith_01_Idle_000.png')
-        minime = pygame.transform.scale(tempimg, (50.25, 72.25))
-
-        tempgolimg = pygame.image.load('Golem_01_Idle Blinking_000.png')
-        minigol = pygame.transform.scale(tempgolimg, (50.25, 72.25))
-
-        tempbirdimg = pygame.image.load('birdie000.png')
-        minibird = pygame.transform.scale(tempbirdimg, (50.25, 72.25))
+       
+        
+        
 
         #pygame.draw.rect(screen, (255,255,255), (player.rect.x, player.rect.y, player.rect.w, player.rect.h))
 
-        screen.blit(player.image, (player.rect.x, player.rect.y))
+        # screen.blit(player.image, (player.rect.x, player.rect.y))
 
         """if player.rect.right >= SCREEN_WIDTH:
             player.rect.right = SCREEN_WIDTH
@@ -548,20 +591,20 @@ while running:
         
         if key[pygame.K_UP]:
             player.goingup = True
-            player.rect.y -= 5
+            player.rect.y -= 7
             player.movement()
         elif key[pygame.K_DOWN]:
             player.goingdown = True
-            player.rect.y += 5
+            player.rect.y += 7
             player.movement()
         elif key[pygame.K_LEFT]:
             player.goingleft = True
-            player.rect.x -= 5
+            player.rect.x -= 7
             player.isleft = True
             player.movement()
         elif key[pygame.K_RIGHT]:
             player.goingright = True
-            player.rect.x += 5
+            player.rect.x += 7
             player.isleft = False
             player.movement()
         if not(player.ismoving):
@@ -597,6 +640,11 @@ while running:
         now = pygame.time.get_ticks()
 
     elif gamestate == "fight":
+        if current_music != "fight":
+            pygame.mixer.music.stop()
+            pygame.mixer.music.load(music_files["fight"])
+            pygame.mixer.music.play(-1)
+            current_music = "fight"
         screen.fill("black")
 
         tshb.upd()

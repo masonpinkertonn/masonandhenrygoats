@@ -1,0 +1,32 @@
+import pygame, sys
+import random as randint
+class CameraGroup(pygame.sprite.Group):
+    def __init__(self, tmx_data):
+        super().__init__()
+        self.display_surface = pygame.display.get_surface()
+
+        # Camera offset
+        self.offset = pygame.math.Vector2()
+        self.half_w = self.display_surface.get_size()[0] // 2
+        self.half_h = self.display_surface.get_size()[1] // 2
+
+        # TMX data
+        self.tmx_data = tmx_data
+
+    def custom_draw(self, player):
+        # Update camera offset based on player position
+        self.offset.x = player.rect.centerx - self.half_w
+        self.offset.y = player.rect.centery - self.half_h
+
+        # Draw TMX layers
+        for layer in self.tmx_data.visible_layers:
+            if hasattr(layer, 'data'):
+                for x, y, surf in layer.tiles():
+                    pos = (x * self.tmx_data.tilewidth - self.offset.x,
+                           y * self.tmx_data.tileheight - self.offset.y)
+                    self.display_surface.blit(surf, pos)
+
+        # Draw sprites
+        for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery):
+            offset_pos = sprite.rect.topleft - self.offset
+            self.display_surface.blit(sprite.image, offset_pos)

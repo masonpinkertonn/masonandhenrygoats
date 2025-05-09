@@ -1,6 +1,12 @@
-import pygame, sys
+import pygame, sys, math
 from random import randint
 
+class NPC(pygame.sprite.Sprite):
+    def __init__(self, image, x, y):
+        super().__init__()
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x, y)
 
 class CameraGroup(pygame.sprite.Group):
     def __init__(self, tmx_data):
@@ -22,6 +28,12 @@ class CameraGroup(pygame.sprite.Group):
 
         # TMX data
         self.tmx_data = tmx_data
+        
+
+        # Tilemap offset
+        self.tilemap_offset_x = -2304  # Horizontal offset
+        self.tilemap_offset_y = -4736   # Vertical offset
+
 
     def box_target_camera(self, target):
         if target.rect.left < self.camera_rect.left:
@@ -37,18 +49,28 @@ class CameraGroup(pygame.sprite.Group):
         self.offset.y = self.camera_rect.top - self.camera_borders['top']
 
     def custom_draw(self, player):
-        # Update camera position
+        # Update camera offset based on player position
         self.box_target_camera(player)
+
+        # Clear the screen
+        self.display_surface.fill((0, 0, 0))
 
         # Draw TMX layers
         for layer in self.tmx_data.visible_layers:
             if hasattr(layer, 'data'):
                 for x, y, surf in layer.tiles():
-                    pos = (x * self.tmx_data.tilewidth - self.offset.x,
-                           y * self.tmx_data.tileheight - self.offset.y)
+                    pos = (
+                        x * self.tmx_data.tilewidth - self.offset.x + self.tilemap_offset_x,
+                        y * self.tmx_data.tileheight - self.offset.y + self.tilemap_offset_y
+                    )
                     self.display_surface.blit(surf, pos)
 
         # Draw sprites
         for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery):
-            offset_pos = sprite.rect.topleft - self.offset
-            self.display_surface.blit(sprite.image, offset_pos)
+            if isinstance(sprite, NPC):  # Check if the sprite is an NPC
+                # Draw NPCs at their absolute positions
+                self.display_surface.blit(sprite.image, sprite.rect.topleft)
+            else:
+                # Draw other sprites with the camera offset
+                offset_pos = sprite.rect.topleft - self.offset
+                self.display_surface.blit(sprite.image, offset_pos)
