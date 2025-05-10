@@ -28,8 +28,8 @@ metal_pipe_sound = pygame.mixer.Sound("metalpipe.mp3")
 metal_pipe_sound.set_volume(1.0)  
 compinf = pygame.display.Info()
 
-SCREEN_WIDTH = 1280 #compinf.current_w #1280
-SCREEN_HEIGHT = 720 #compinf.current_h #720
+SCREEN_WIDTH = compinf.current_w
+SCREEN_HEIGHT = compinf.current_h #720
 
 wrapwidth = 2
 
@@ -75,6 +75,7 @@ class Player(pygame.sprite.Sprite):
         self.health = 20
         self.isgolemdefeated = False
         self.isbirddefeated = False
+        self.isplantdefeated = False
         self.goingup = False
         self.goingdown = False
         self.goingleft = False
@@ -107,6 +108,15 @@ class Player(pygame.sprite.Sprite):
         self.rect.y = SCREEN_HEIGHT/3
         self.isleft = False
         self.ismoving = False
+    def docollisions(self, rct):
+        if self.goingleft:
+            self.rect.left = rct.right#-1
+        if self.goingdown:
+            self.rect.bottom = rct.top#+1
+        if self.goingup:
+            self.rect.top = rct.bottom#-1
+        if self.goingright:
+            self.rect.right = rct.left#+1
     def idleanimation(self):
         self.currentsprite += 0.2
 
@@ -131,55 +141,9 @@ class Player(pygame.sprite.Sprite):
         if self.isleft:
             self.image = pygame.transform.flip(self.image, True, False)
 
-class Golem(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.health = 15
-        self.sprites = []
-        names = []
-        for i in range(10):
-            names.append('Golem_01_Idle Blinking_00'+str(i)+'.png')
-        names.append('Golem_01_Idle Blinking_010.png')
-        names.append('Golem_01_Idle Blinking_011.png')
-        for i in names:
-            tempimg = pygame.image.load(i)
-            tempimg = pygame.transform.scale(tempimg, (200,200))
-            self.sprites.append(tempimg)
-        self.currentsprite = 0
-        self.image = self.sprites[self.currentsprite]
-        self.rect = self.image.get_rect()
-    def idleanimation(self):
-        self.currentsprite += 0.1
-
-        if self.currentsprite >= len(self.sprites):
-            self.currentsprite = 0
-
-        self.image = self.sprites[int(self.currentsprite)]
-
-class Bird(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.health = 15
-        self.sprites = []
-        names = []
-        for i in range(4):
-            names.append('birdie00'+str(i)+'.png')
-        for i in names:
-            tempimg = pygame.image.load(i)
-            tempimg = pygame.transform.scale(tempimg, (200,200))
-            self.sprites.append(tempimg)
-        self.currentsprite = 0
-        self.image = self.sprites[self.currentsprite]
-        self.rect = self.image.get_rect()
-    def idleanimation(self):
-        self.currentsprite += 0.1
-
-        if self.currentsprite >= len(self.sprites):
-            self.currentsprite = 0
-
-        self.image = self.sprites[int(self.currentsprite)]
-
 birb = Bird()
+
+planto = PSHOOTER()
 
 def golemdialogue(currentline, fname):
     dialogue = open(fname, 'r')
@@ -228,6 +192,7 @@ golem = Golem()
 
 newdialogueline = 0
 golemdialogueline = 0
+plantdialogueline = 0
 
 last = pygame.time.get_ticks()
 now = pygame.time.get_ticks()
@@ -238,21 +203,13 @@ class ebutton:
         self.image = pygame.transform.scale(self.image, (50,50))
         self.isshowinggolemdialogue = False
         self.isshowingbirddialogue = False
+        self.isshowingplantdialogue = False
         self.isshowingshop = False
+        self.rect = self.image.get_rect()
 
 e_button = ebutton()
 
 golem.rect.y = 400
-
-def docollisions(rct):
-    if player.goingleft:
-        player.rect.left = rct.right#-1
-    elif player.goingdown:
-        player.rect.bottom = rct.top#+1
-    elif player.goingup:
-        player.rect.top = rct.bottom#-1
-    elif player.goingright:
-        player.rect.right = rct.left#+1
 
 gamestate = "main"
 
@@ -403,14 +360,18 @@ class MonsterHB:
 tshb = HealthBar()
 monstahb = MonsterHB(golem)
 birbhb = MonsterHB(birb)
+planthb = MonsterHB(planto)
 
 gamestats = {"currentmonster":golem, "route":"pacifist", "money":0}
 
 playerinv = {}
 
 
+shoota = pygame.image.load('peashooter.png')
+shootarect = shoota.get_rect()
 
 
+skibidutton = sanbutton()
 
 birb.rect.y = 700
 
@@ -420,11 +381,16 @@ camera_group = CameraGroup(tmx_data)
 # Add the player to the camera group
 player = Player()
 camera_group.add(player)
+camera_group.add(golem)
+camera_group.add(birb)
+camera_group.add(skibidutton)
+camera_group.add(planto)
 minime = load_image('Wraith_01_Idle_000.png', (50.25, 72.25))
 minigol = load_image('Golem_01_Idle Blinking_000.png', (50.25, 72.25))
 sansbutt = load_image("SANS.png", (225, 300))
 truesans = load_image("skibidi.png", (1024 // 5, 1346 // 5))
 minibird = load_image('birdie000.png', (50.25, 72.25))
+miniplant = load_image('plant000.png', (50.25, 72.25))
 
 #75x100
 srect = sansbutt.get_rect()
@@ -439,18 +405,22 @@ sansbutt_image = load_image("SANS.png", (225, 300))
 truesans_image = load_image("skibidi.png", (1024 // 5, 1346 // 5))
 
 # Create NPCs
-sansbutt = NPC(sansbutt_image, SCREEN_WIDTH - 235, SCREEN_HEIGHT // 2 - 150)
-truesans = NPC(truesans_image, SCREEN_WIDTH // 2 - 1024 // 10, SCREEN_HEIGHT // 2 - 1346 // 10)
+#sansbutt = NPC(sansbutt_image, SCREEN_WIDTH - 235, SCREEN_HEIGHT // 2 - 150)
+#truesans = NPC(truesans_image, SCREEN_WIDTH // 2 - 1024 // 10, SCREEN_HEIGHT // 2 - 1346 // 10)
 
 # Add NPCs to the list
-npc_list = [golem, birb, sansbutt]
+npc_list = [golem, birb]
 pygame.mixer.Sound.play(pygame.mixer.Sound("Balatro - Complete Original Soundtrack (Official).mp3"))
+
+mypeeps = [golem, birb, planto, skibidutton]
+
 while running:
     """if player.rect.x > SCREEN_WIDTH /4 *3:
         cameraX -= 5
     elif player.rect.x < SCREEN_WIDTH / 6:
         cameraX += 5"""
     if gamestate == "main":
+        
         if current_music != "main":
             pygame.mixer.music.stop()
             pygame.mixer.music.load(music_files["main"])
@@ -462,6 +432,8 @@ while running:
         # Define camera thresholds
         CAMERA_THRESHOLD_X = SCREEN_WIDTH // 4
         CAMERA_THRESHOLD_Y = SCREEN_HEIGHT // 4
+
+        print(camera_group.sprites())
 
         # Calculate camera offset
         if player.rect.centerx > SCREEN_WIDTH - CAMERA_THRESHOLD_X:
@@ -475,21 +447,17 @@ while running:
             camera_offset_y += player.rect.centery - CAMERA_THRESHOLD_Y
         # Camera.box_target_camera(Player.rect, SCREEN_WIDTH, SCREEN_HEIGHT)
         sprite_group.draw(screen)
-        camera_group.custom_draw(player)
-        for npc in npc_list:
-            screen.blit(npc.image, (npc.rect.x, npc.rect.y))
+        camera_group.custom_draw(player, mypeeps, e_button)
        # screen.blit(player.image, (player.rect.x, player.rect.y))
 
+        print(player.rect.y)
 
         thisfont = pygame.font.SysFont("Arial", 30)
         thistxt = "Coins: " + str(gamestats["money"])
         mytxt = thisfont.render(thistxt, True, "white")
         screen.blit(mytxt, (10,10))
         
-        #pygame.draw.rect(screen, "red", (player.rect.x, player.rect.y, player.rect.w, player.rect.h))
-
-       
-        
+        #pygame.draw.rect(screen, "red", (player.rect.x, player.rect.y, player.rect.w, player.rect.h)
         
 
         #pygame.draw.rect(screen, (255,255,255), (player.rect.x, player.rect.y, player.rect.w, player.rect.h))
@@ -504,20 +472,60 @@ while running:
             player.rect.y = 0
         if player.rect.bottom >= SCREEN_HEIGHT:
             player.rect.bottom = SCREEN_HEIGHT"""
+        
+        #screen.blit(sansbutt, (srect.x, srect.y))
 
         expansion = player.rect.inflate(50,50)
 
-        if expansion.colliderect(srect):
+        if expansion.colliderect(skibidutton.rect):
             erect = e_button.image.get_rect()
-            screen.blit(e_button.image, (srect.topright[0]-srect.w/2-erect.w/2,srect.topright[1]-50))
+            screen.blit(e_button.image, (-10000,-100000))
             e_button.isshowingshop=True
         else:
             e_button.isshowingshop = False
 
-        if player.rect.colliderect(srect):
-            docollisions(srect)
+        #if player.rect.colliderect(skibidutton.rect):
+            #docollisions(skibidutton.rect)
 
-        if not(player.isbirddefeated):
+        #if not(player.isplantdefeated):
+            #y = golemdialogue()
+
+        if not(player.isplantdefeated) and not(planto.isdefeated):
+            y = golemdialogue(plantdialogueline, "planty.npc")
+
+            plantdialogueline = y[1]
+
+            planttxtrct = y[3]
+
+            planto.idleanimation()
+            if expansion.colliderect(planto.rect):
+                #screen.blit(e_button.image, (planto.rect.x+50,planto.rect.y))
+                if y[2] == "monster":
+                    pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
+                    tsrect = pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-290,SCREEN_HEIGHT-240,580,180))
+                    screen.blit(miniplant, (SCREEN_WIDTH/2-280,tsrect.centery-36.125))
+                    if isinstance(y[0], list):
+                        screen.blit(y[0][0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
+                        screen.blit(y[0][1], (SCREEN_WIDTH/2-280+50.25+25,SCREEN_HEIGHT-200))
+                    else:
+                        screen.blit(y[0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
+                elif y[2] == "player":
+                    pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
+                    pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-290,SCREEN_HEIGHT-240,580,180))
+                    screen.blit(minime, (SCREEN_WIDTH/2-280,tsrect.centery-36.125))
+                    if isinstance(y[0], list):
+                        screen.blit(y[0][0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
+                        screen.blit(y[0][1], (SCREEN_WIDTH/2-280+50.25+25,SCREEN_HEIGHT-200))
+                    else:
+                        screen.blit(y[0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
+                e_button.isshowingplantdialogue = True
+            else:
+                e_button.isshowingplantdialogue = False
+                plantdialogueline = 0
+            #if player.rect.colliderect(planto.rect):
+                #docollisions(planto.rect)
+
+        if not(player.isbirddefeated) and not(birb.isdefeated):
 
             z = golemdialogue(newdialogueline, "birddialogue.npc")
 
@@ -525,10 +533,13 @@ while running:
 
             newtxtrct = z[3]
 
-            screen.blit(birb.image, (birb.rect.x,birb.rect.y))
+            
+
+            #screen.blit(birb.image, (birb.rect.x,birb.rect.y))
+            #camera_group.custom_draw(birb)
             birb.idleanimation()
             if expansion.colliderect(birb.rect):
-                screen.blit(e_button.image, (birb.rect.x+50,birb.rect.y))
+                #screen.blit(e_button.image, (birb.rect.x+50,birb.rect.y))
                 if z[2] == "monster":
                     pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
                     tsrect = pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-290,SCREEN_HEIGHT-240,580,180))
@@ -551,10 +562,10 @@ while running:
             else:
                 e_button.isshowingbirddialogue = False
                 newdialogueline = 0
-            if player.rect.colliderect(birb.rect):
-                docollisions(birb.rect)
+            #if player.rect.colliderect(birb.rect):
+                #docollisions(birb.rect)
 
-        if not(player.isgolemdefeated):
+        if not(player.isgolemdefeated) and not(golem.isdefeated):
 
             x = golemdialogue(golemdialogueline, "golemtext.npc")
 
@@ -564,10 +575,10 @@ while running:
 
             golem.idleanimation()
 
-            screen.blit(golem.image, (golem.rect.x, golem.rect.y))
+            #screen.blit(golem.image, (golem.rect.x, golem.rect.y))
 
             if expansion.colliderect(golem.rect):
-                screen.blit(e_button.image, (golem.rect.x+50,golem.rect.y-60))
+                #screen.blit(e_button.image, (golem.rect.x+50,golem.rect.y-60))
                 if x[2] == "monster":
                     pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
                     tsrect = pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-290,SCREEN_HEIGHT-240,580,180))
@@ -591,8 +602,8 @@ while running:
                 e_button.isshowinggolemdialogue = False
                 golemdialogueline = 0
 
-            if player.rect.colliderect(golem.rect):
-                docollisions(golem.rect)
+            #if player.rect.colliderect(golem.rect):
+                #docollisions(golem.rect)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -647,6 +658,16 @@ while running:
                     e_button.isshowingbirddialogue = False
                     continue
                 newdialogueline += 1
+        if key[pygame.K_e] and e_button.isshowingplantdialogue:
+            if now - last >= 700:
+                last = pygame.time.get_ticks()
+                if plantdialogueline == 5:
+                    plantdialogueline = 0
+                    gamestate="fight"
+                    gamestats["currentmonster"] = planto
+                    e_button.isshowingplantdialogue = False
+                    continue
+                plantdialogueline += 1
         if key[pygame.K_e] and e_button.isshowingshop:
             gamestate = "shop"
             continue
@@ -675,6 +696,9 @@ while running:
         elif gamestats["currentmonster"] == birb:
             birbhb.upd()
             birbhb.drawit()
+        elif gamestats["currentmonster"] == planto:
+            planthb.upd()
+            planthb.drawit()
 
         gamestats["currentmonster"].idleanimation()
 
@@ -737,6 +761,9 @@ while running:
         elif gamestats["currentmonster"] == birb:
             birbhb.upd()
             birbhb.drawit()
+        elif gamestats["currentmonster"] == planto:
+            planthb.upd()
+            planthb.drawit()
 
         #print(gamestate)
 
@@ -757,8 +784,13 @@ while running:
                 gamestate = "main"
                 if gamestats["currentmonster"] == golem:
                     player.isgolemdefeated = True
+                    golem.isdefeated = True
                 elif gamestats["currentmonster"] == birb:
                     player.isbirddefeated = True
+                    birb.isdefeated = True
+                elif gamestats["currentmonster"] == planto:
+                    player.isplantdefeated = True
+                    planto.isdefeated = True
                 tempx = SCREEN_WIDTH/2-275
                 linegoinleft = False
                 linestopped = False
@@ -795,8 +827,13 @@ while running:
                     gamestate = "main"
                     if gamestats["currentmonster"] == golem:
                         player.isgolemdefeated = True
+                        golem.isdefeated = True
                     elif gamestats["currentmonster"] == birb:
                         player.isbirddefeated = True
+                        birb.isdefeated = True
+                    elif gamestats["currentmonster"] == planto:
+                        player.isplantdefeated = True
+                        planto.isdefeated = True
                     tempx = SCREEN_WIDTH/2-275
                     linegoinleft = False
                     linestopped = False
@@ -859,6 +896,9 @@ while running:
         elif gamestats["currentmonster"] == birb:
             birbhb.upd()
             birbhb.drawit()
+        elif gamestats["currentmonster"] == planto:
+            planthb.upd()
+            planthb.drawit()
 
         gamestats["currentmonster"].idleanimation()
 
@@ -899,8 +939,13 @@ while running:
                         gamestate = "main"
                         if gamestats["currentmonster"] == golem:
                             player.isgolemdefeated = True
+                            golem.isdefeated = True
                         elif gamestats["currentmonster"] == birb:
                             player.isbirddefeated = True
+                            birb.isdefeated = True
+                        elif gamestats["currentmonster"] == planto:
+                            player.isplantdefeated = True
+                            planto.isdefeated = True
                         tempx = SCREEN_WIDTH/2-275
                         linegoinleft = False
                         linestopped = False
@@ -935,6 +980,9 @@ while running:
         elif gamestats["currentmonster"] == birb:
             birbhb.upd()
             birbhb.drawit()
+        elif gamestats["currentmonster"] == planto:
+            planthb.upd()
+            planthb.drawit()
 
         gamestats["currentmonster"].idleanimation()
 
@@ -994,7 +1042,147 @@ while running:
         now = pygame.time.get_ticks()
 
     elif gamestate == "defend":
-        if gamestats["currentmonster"] == birb:
+
+        if gamestats["currentmonster"] == planto:
+            screen.fill("black")
+
+            planto.idleanimation()
+
+            screen.blit(planto.image, (planto.fakex, planto.fakey))
+
+            tshb.upd()
+            tshb.drawit()
+
+            if gamestats["currentmonster"] == golem:
+                monstahb.upd()
+                monstahb.drawit()
+            elif gamestats["currentmonster"] == birb:
+                birbhb.upd()
+                birbhb.drawit()
+            elif gamestats["currentmonster"] == planto:
+                planthb.upd()
+                planthb.drawit()
+
+            utheart.checks()
+
+            pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-160,SCREEN_HEIGHT/2-160,320,320))
+
+            pygame.draw.rect(screen, (0,0,0), (SCREEN_WIDTH/2-150,SCREEN_HEIGHT/2-150,300,300))
+
+            if now-newlast >= 11500:
+                utheart.rect.center = [SCREEN_WIDTH/2, SCREEN_HEIGHT/2]
+                mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
+                mypipe.rect = mypipe.image.get_rect()
+                mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
+                mypipe.rect.left = leftmostbox-200
+                myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(1,250)))
+                myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
+                myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
+                myupsidedownpipe.rect.left = leftmostbox-200
+                """
+                golclub2.rect.right = rightmostbox+200
+                golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+                golclub3.rect.top = upmostbox-200
+                golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+                golclub4.rect.bottom = downmostbox+200
+                golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+                """
+                gamestate = "fight"
+                tempx = SCREEN_WIDTH/2-275
+                linegoinleft = False
+                linestopped = False
+                continue
+
+            if now-last >= 1500:
+                if mypipe.rect.x >= SCREEN_WIDTH/2-150 and mypipe.rect.right <= SCREEN_WIDTH/2+150:
+                    screen.blit(mypipe.image, (mypipe.rect.x,mypipe.rect.y))
+                mypipe.move((round+1)*1.5)
+                if myupsidedownpipe.rect.x >= SCREEN_WIDTH/2-150 and myupsidedownpipe.rect.right <= SCREEN_WIDTH/2+150:
+                    screen.blit(myupsidedownpipe.image, (myupsidedownpipe.rect.x, myupsidedownpipe.rect.y))
+                myupsidedownpipe.move((round+1)*1.5)
+                """
+                if round >= 2:
+                    screen.blit(golclub2.image, (golclub2.rect.x,golclub2.rect.y))
+                    golclub2.move(-5)
+                if round >= 3:
+                    screen.blit(golclub3.image, (golclub3.rect.x,golclub3.rect.y))
+                    golclub3.move(5)
+                if round >= 4:
+                    screen.blit(golclub4.image, (golclub4.rect.x,golclub4.rect.y))
+                    golclub4.move(-5)
+                """
+                if utheart.rect.colliderect(mypipe.rect) or utheart.rect.colliderect(myupsidedownpipe.rect):
+                    sound_effects_channel.play(metal_pipe_sound)
+                    player.health -= 2
+                    if player.health == 0:
+                        running = False
+                        break
+                    mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
+                    mypipe.rect = mypipe.image.get_rect()
+                    mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
+                    mypipe.rect.left = leftmostbox-200
+                    myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(20,250)))
+                    myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
+                    myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
+                    myupsidedownpipe.rect.left = leftmostbox-200
+                    """
+                    golclub2.rect.right = rightmostbox+200
+                    golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+                    golclub3.rect.top = upmostbox-200
+                    golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+                    golclub4.rect.bottom = downmostbox+200
+                    golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+                    """
+
+            if mypipe.rect.right >= rightmostbox+200:
+                mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
+                mypipe.rect = mypipe.image.get_rect()
+                mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
+                mypipe.rect.left = leftmostbox-200
+
+            if myupsidedownpipe.rect.right >= rightmostbox+200:
+                myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(20,250)))
+                myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
+                myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
+                myupsidedownpipe.rect.left = leftmostbox-200
+
+            """
+
+            if golclub3.rect.bottom >= downmostbox+200:
+                golclub3.rect.top = upmostbox-200
+                golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+
+            if golclub4.rect.top <= upmostbox-200:
+                golclub4.rect.bottom = downmostbox+200
+                golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+
+            """
+
+            screen.blit(utheart.image, (utheart.rect.x, utheart.rect.y))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
+
+            key = pygame.key.get_pressed()
+            
+            if key[pygame.K_UP]:
+                utheart.rect.y -= 6
+            elif key[pygame.K_DOWN]:
+                utheart.rect.y += 6
+            elif key[pygame.K_LEFT]:
+                utheart.rect.x -= 6
+            elif key[pygame.K_RIGHT]:
+                utheart.rect.x += 6
+            
+            pygame.display.flip()
+
+            clock.tick(60)
+
+            now = pygame.time.get_ticks()
+
+        elif gamestats["currentmonster"] == birb:
             screen.fill("black")
 
             while mypipe.rect.h + myupsidedownpipe.rect.h > 250 or mypipe.rect.h + myupsidedownpipe.rect.h < 225:
@@ -1018,6 +1206,9 @@ while running:
             elif gamestats["currentmonster"] == birb:
                 birbhb.upd()
                 birbhb.drawit()
+            elif gamestats["currentmonster"] == planto:
+                planthb.upd()
+                planthb.drawit()
 
             utheart.checks()
 
@@ -1154,6 +1345,9 @@ while running:
             elif gamestats["currentmonster"] == birb:
                 birbhb.upd()
                 birbhb.drawit()
+            elif gamestats["currentmonster"] == planto:
+                planthb.upd()
+                planthb.drawit()
 
             utheart.checks()
 

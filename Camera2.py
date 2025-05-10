@@ -1,12 +1,107 @@
 import pygame, sys, math
 from random import randint
 
+image_cache={}
+
+class PSHOOTER(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.health = 15
+        self.sprites = []
+        names = []
+        for i in range(4):
+            names.append('plant00'+str(i)+'.png')
+        for i in names:
+            tempimg = pygame.image.load(i)
+            tempimg = pygame.transform.scale(tempimg, (200,200))
+            self.sprites.append(tempimg)
+        self.currentsprite = 0
+        self.image = self.sprites[self.currentsprite]
+        self.rect = self.image.get_rect()
+        self.isdefeated = False
+    def idleanimation(self):
+        self.currentsprite += 0.1
+
+        if self.currentsprite >= len(self.sprites):
+            self.currentsprite = 0
+
+        self.image = self.sprites[int(self.currentsprite)]
+
+def load_image(filename, scale=None):
+    if filename not in image_cache:
+        print(f"Loading image: {filename}")
+        image = pygame.image.load(filename)
+        if scale:
+            image = pygame.transform.scale(image, scale)
+        image_cache[filename] = image
+    return image_cache[filename]
+
 class NPC(pygame.sprite.Sprite):
     def __init__(self, image, x, y):
         super().__init__()
         self.image = image
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
+
+class sanbutton(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = load_image("SANS.png", (225, 300))
+        self.rect = self.image.get_rect()
+        self.rect.x = 250
+        self.rect.y = -400
+        self.isdefeated = False
+
+class Bird(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.health = 15
+        self.sprites = []
+        names = []
+        for i in range(4):
+            names.append('birdie00'+str(i)+'.png')
+        for i in names:
+            tempimg = pygame.image.load(i)
+            tempimg = pygame.transform.scale(tempimg, (200,200))
+            self.sprites.append(tempimg)
+        self.currentsprite = 0
+        self.image = self.sprites[self.currentsprite]
+        self.rect = self.image.get_rect()
+        self.isdefeated = False
+    def idleanimation(self):
+        self.currentsprite += 0.1
+
+        if self.currentsprite >= len(self.sprites):
+            self.currentsprite = 0
+
+        self.image = self.sprites[int(self.currentsprite)]
+
+class Golem(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.health = 15
+        self.sprites = []
+        names = []
+        for i in range(10):
+            names.append('Golem_01_Idle Blinking_00'+str(i)+'.png')
+        names.append('Golem_01_Idle Blinking_010.png')
+        names.append('Golem_01_Idle Blinking_011.png')
+        for i in names:
+            tempimg = pygame.image.load(i)
+            tempimg = tempimg
+            tempimg = pygame.transform.scale(tempimg, (200,200))
+            self.sprites.append(tempimg)
+        self.currentsprite = 0
+        self.image = self.sprites[self.currentsprite]
+        self.rect = self.image.get_rect()
+        self.isdefeated = False
+    def idleanimation(self):
+        self.currentsprite += 0.1
+
+        if self.currentsprite >= len(self.sprites):
+            self.currentsprite = 0
+
+        self.image = self.sprites[int(self.currentsprite)]
 
 class CameraGroup(pygame.sprite.Group):
     def __init__(self, tmx_data):
@@ -48,8 +143,11 @@ class CameraGroup(pygame.sprite.Group):
         self.offset.x = self.camera_rect.left - self.camera_borders['left']
         self.offset.y = self.camera_rect.top - self.camera_borders['top']
 
-    def custom_draw(self, player):
+    def custom_draw(self, player, mypeeps, e_button):
         # Update camera offset based on player position
+
+        expansion = player.rect.inflate(50,50)
+
         self.box_target_camera(player)
 
         # Clear the screen
@@ -67,10 +165,26 @@ class CameraGroup(pygame.sprite.Group):
 
         # Draw sprites
         for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery):
-            if isinstance(sprite, NPC):  # Check if the sprite is an NPC
+            if isinstance(sprite, Golem):  # Check if the sprite is an NPC
                 # Draw NPCs at their absolute positions
-                self.display_surface.blit(sprite.image, sprite.rect.topleft)
+                if not(player.isgolemdefeated):
+                    self.display_surface.blit(sprite.image, sprite.rect.topleft-self.offset)
+            elif isinstance(sprite, Bird):  # Check if the sprite is an NPC
+                # Draw NPCs at their absolute positions
+                if not(player.isbirddefeated):
+                    self.display_surface.blit(sprite.image, sprite.rect.topleft-self.offset)
+            elif isinstance(sprite, PSHOOTER):  # Check if the sprite is an NPC
+                # Draw NPCs at their absolute positions
+                if not(player.isplantdefeated):
+                    self.display_surface.blit(sprite.image, sprite.rect.topleft-self.offset)
             else:
                 # Draw other sprites with the camera offset
                 offset_pos = sprite.rect.topleft - self.offset
                 self.display_surface.blit(sprite.image, offset_pos)
+
+        for i in mypeeps:
+            if not(i.isdefeated):
+                if expansion.colliderect(i.rect):
+                    self.display_surface.blit(e_button.image, (i.rect.center[0]-e_button.rect.w/2-self.offset[0],i.rect.center[1]-100-self.offset[1]))
+                if player.rect.colliderect(i.rect):
+                    player.docollisions(i.rect)
