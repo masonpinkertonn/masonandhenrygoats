@@ -6,6 +6,7 @@ from pygame_aseprite_animation import *
 from pytmx.util_pygame import load_pygame
 from top_down_sprites import *
 from Camera2 import *
+import time
 pygame.init()
 pygame.font.init()
 pygame.mixer.init()
@@ -67,7 +68,7 @@ class hitbutton:
         self.y = y
         self.width = width
         self.height = height
-
+gameover = pygame.image.load('gameover.png')
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -1148,8 +1149,9 @@ while running:
                         sound_effects_channel.play(metal_pipe_sound)
                         player.health -= 2
                         if player.health == 0:
-                            running = False
-                            break
+                            gamestate = "gameover"
+                            last = pygame.time.get_ticks()
+                            continue
                         for testp in peaobjs:
                             testp.reset()
                         """
@@ -1277,8 +1279,9 @@ while running:
                     sound_effects_channel.play(metal_pipe_sound)
                     player.health -= 2
                     if player.health == 0:
-                        running = False
-                        break
+                        gamestate = "gameover"
+                        last = pygame.time.get_ticks()
+                        continue
                     mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
                     mypipe.rect = mypipe.image.get_rect()
                     mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
@@ -1407,8 +1410,9 @@ while running:
                     sound_effects_channel.play(vine_boom_sound)
                     player.health -= 2
                     if player.health == 0:
-                        running = False
-                        break
+                        gamestate = "gameover"
+                        last = pygame.time.get_ticks()
+                        continue
                     golclub.rect.left = leftmostbox-200
                     golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
                     golclub2.rect.right = rightmostbox+200
@@ -1525,5 +1529,24 @@ while running:
         clock.tick(60)
 
         now = pygame.time.get_ticks()
+    
+    elif gamestate == "gameover":
+        screen.fill("black")
 
+        screen.fill((0,0,0))
+        pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-400,SCREEN_HEIGHT/2-200,800,400))
+        screen.blit(gameover, (SCREEN_WIDTH/2,SCREEN_HEIGHT/2))
+
+        if now-last >= 15000:
+            running = False
+            break
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                break
+        
+        pygame.display.flip()
+        clock.tick(60)
+        now = pygame.time.get_ticks()
 pygame.quit()
