@@ -40,7 +40,7 @@ cameraX = 0
 cameraY = 0
 def load_image(filename, scale=None):
     if filename not in image_cache:
-        print(f"Loading image: {filename}")
+        #print(f"Loading image: {filename}")
         image = pygame.image.load(filename)
         if scale:
             image = pygame.transform.scale(image, scale)
@@ -49,7 +49,7 @@ def load_image(filename, scale=None):
 
 for layer in tmx_data.layers:
     if hasattr (layer, 'data'):
-        print(layer)
+        #print(layer)
         for x,y,surf in layer.tiles():
             pos = (x * tmx_data.tilewidth, y * tmx_data.tileheight)
             Tile(pos = pos, surf = surf, groups = sprite_group)
@@ -423,7 +423,7 @@ class Pea:
         self.movex = True
         self.movey = True
     def checks(self):
-        if self.rect.x >= SCREEN_WIDTH/2+150:
+        if self.rect.right >= SCREEN_WIDTH/2+150:
             self.reset()
         if self.rect.x <= SCREEN_WIDTH/2-150:
             self.reset()
@@ -431,9 +431,9 @@ class Pea:
             self.reset()
         if isinstance(self.movex, bool) and isinstance(self.movey, bool):
             distance = (utheart.rect.centerx-self.rect.centerx, abs(utheart.rect.centery-self.rect.centery))#pygame.Vector2(utheart.rect.center).distance_to(pygame.Vector2(self.rect.center))
-            print(distance)
-            self.movey = distance[1]/25
-            self.movex = distance[0]/25
+            #print(distance)
+            self.movey = distance[1]/30
+            self.movex = distance[0]/30
 
 
 testp = Pea()
@@ -473,7 +473,7 @@ while running:
         CAMERA_THRESHOLD_X = SCREEN_WIDTH // 4
         CAMERA_THRESHOLD_Y = SCREEN_HEIGHT // 4
 
-        print(camera_group.sprites())
+        #print(camera_group.sprites())
 
         # Calculate camera offset
         if player.rect.centerx > SCREEN_WIDTH - CAMERA_THRESHOLD_X:
@@ -490,7 +490,7 @@ while running:
         camera_group.custom_draw(player, mypeeps, e_button)
        # screen.blit(player.image, (player.rect.x, player.rect.y))
 
-        print(player.rect.y)
+        #print(player.rect.y)
 
         thisfont = pygame.font.SysFont("Arial", 30)
         thistxt = "Coins: " + str(gamestats["money"])
@@ -1387,20 +1387,20 @@ while running:
                 continue
 
             if now-last >= 1500:
-                if golclub.rect.x >= SCREEN_WIDTH/2-150 and golclub.rect.right <= SCREEN_WIDTH/2+150:
-                    screen.blit(golclub.image, (golclub.rect.x,golclub.rect.y))
+                #if golclub.rect.x >= SCREEN_WIDTH/2-150 and golclub.rect.right <= SCREEN_WIDTH/2+150:
+                screen.blit(golclub.image, (golclub.rect.x,golclub.rect.y))
                 golclub.move(5)
                 if round >= 2:
-                    if golclub2.rect.x >= SCREEN_WIDTH/2-150 and golclub2.rect.right <= SCREEN_WIDTH/2+150:
-                        screen.blit(golclub2.image, (golclub2.rect.x,golclub2.rect.y))
+                    #if golclub2.rect.x >= SCREEN_WIDTH/2-150 and golclub2.rect.right <= SCREEN_WIDTH/2+150:
+                    screen.blit(golclub2.image, (golclub2.rect.x,golclub2.rect.y))
                     golclub2.move(-5)
                 if round >= 3:
-                    if golclub3.rect.x >= SCREEN_WIDTH/2-150 and golclub3.rect.right <= SCREEN_WIDTH/2+150:
-                        screen.blit(golclub3.image, (golclub3.rect.x,golclub3.rect.y))
+                    #if golclub3.rect.x >= SCREEN_WIDTH/2-150 and golclub3.rect.right <= SCREEN_WIDTH/2+150:
+                    screen.blit(golclub3.image, (golclub3.rect.x,golclub3.rect.y))
                     golclub3.move(5)
                 if round >= 4:
-                    if golclub4.rect.x >= SCREEN_WIDTH/2-150 and golclub4.rect.right <= SCREEN_WIDTH/2+150:
-                        screen.blit(golclub4.image, (golclub4.rect.x,golclub4.rect.y))
+                    #if golclub4.rect.x >= SCREEN_WIDTH/2-150 and golclub4.rect.right <= SCREEN_WIDTH/2+150:
+                    screen.blit(golclub4.image, (golclub4.rect.x,golclub4.rect.y))
                     golclub4.move(-5)
                 if utheart.rect.colliderect(golclub.rect) or utheart.rect.colliderect(golclub2.rect) or utheart.rect.colliderect(golclub3.rect) or utheart.rect.colliderect(golclub4.rect):
                     sound_effects_channel.play(vine_boom_sound)
