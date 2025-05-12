@@ -16,6 +16,7 @@ inshop = {"Pie": ["Pie",5,1], "Cake":["Cake",10,2], "Super Health Potion":["Supe
 music_files = {
     "main": "Balatro - Complete Original Soundtrack (Official).mp3",
     "fight": "Doom Eternal OST - The Only Thing They Fear Is You (Mick Gordon) [Doom Eternal Theme].mp3",
+    "gameover": "gameover.mp3",
 }
 current_music = None
 wrapper = textwrap.TextWrapper(width=30)
@@ -1531,6 +1532,12 @@ while running:
         now = pygame.time.get_ticks()
     
     elif gamestate == "gameover":
+        if current_music != "gameover":
+            if pygame.mixer.music.get_busy():  # Check if music is currently playing
+                pygame.mixer.music.fadeout(500)  # Fade out the current music over 500ms
+            pygame.mixer.music.load(music_files["gameover"])  # Load the fight music
+            pygame.mixer.music.play(-1)  # Play the fight music in a loop
+            current_music = "gameover"
         screen.fill("black")
 
         screen.fill((0,0,0))
