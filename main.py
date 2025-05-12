@@ -10,7 +10,7 @@ pygame.init()
 pygame.font.init()
 pygame.mixer.init()
 image_cache={}
-inshop = {"Pie": ["Pie",5,1], "Cake":["Cake",10,2], "Amazing":["Amazing",15,3]}
+inshop = {"Pie": ["Pie",5,1], "Cake":["Cake",10,2], "Super Health Potion":["Super Health Potion",15,3]}
 # Preload music for each gamestate
 music_files = {
     "main": "Balatro - Complete Original Soundtrack (Official).mp3",
@@ -368,6 +368,7 @@ playerinv = {}
 
 
 shoota = pygame.image.load('peashooter.png')
+shoota = pygame.transform.scale(shoota, (442/10, 446/10))
 shootarect = shoota.get_rect()
 
 
@@ -403,6 +404,45 @@ trrect.y = SCREEN_HEIGHT/2-trrect.h/2
 # Load NPC images
 sansbutt_image = load_image("SANS.png", (225, 300))
 truesans_image = load_image("skibidi.png", (1024 // 5, 1346 // 5))
+
+class Pea:
+    def __init__(self):
+        self.image = pygame.image.load('pea.png')
+        self.image = pygame.transform.scale(self.image, (40,40))
+        self.rect = self.image.get_rect()
+        self.rect.x = SCREEN_WIDTH/2-shootarect.w/2
+        self.rect.y = SCREEN_HEIGHT/2+150-shootarect.h
+        self.movex = True
+        self.movey = True
+    def move(self):
+        self.rect.x += self.movex
+        self.rect.y -= self.movey
+    def reset(self):
+        self.rect.x = SCREEN_WIDTH/2-shootarect.w/2
+        self.rect.y = SCREEN_HEIGHT/2+150-shootarect.h
+        self.movex = True
+        self.movey = True
+    def checks(self):
+        if self.rect.x >= SCREEN_WIDTH/2+150:
+            self.reset()
+        if self.rect.x <= SCREEN_WIDTH/2-150:
+            self.reset()
+        if self.rect.y <= SCREEN_HEIGHT/2-150:
+            self.reset()
+        if isinstance(self.movex, bool) and isinstance(self.movey, bool):
+            distance = (utheart.rect.centerx-self.rect.centerx, abs(utheart.rect.centery-self.rect.centery))#pygame.Vector2(utheart.rect.center).distance_to(pygame.Vector2(self.rect.center))
+            print(distance)
+            self.movey = distance[1]/25
+            self.movex = distance[0]/25
+
+
+testp = Pea()
+testp2 = Pea()
+testp3 = Pea()
+testp4 = Pea()
+testp5 = Pea()
+
+peaobjs = [testp, testp2, testp3, testp4, testp5]
 
 # Create NPCs
 #sansbutt = NPC(sansbutt_image, SCREEN_WIDTH - 235, SCREEN_HEIGHT // 2 - 150)
@@ -804,6 +844,8 @@ while running:
             linegoinleft = False
             last = pygame.time.get_ticks()
             gamestate = "defend"
+            if gamestats["currentmonster"] == planto:
+                planto.movey = randint(2+round,round*2+4)
             newlast = pygame.time.get_ticks()
             round += 1
             continue
@@ -847,6 +889,8 @@ while running:
                 linegoinleft = False
                 last = pygame.time.get_ticks()
                 gamestate = "defend"
+                if gamestats["currentmonster"] == planto:
+                    planto.movey = randint(2+round,round*2+4)
                 newlast = pygame.time.get_ticks()
                 round += 1
                 continue
@@ -933,6 +977,8 @@ while running:
                         last = pygame.time.get_ticks()
                         newlast = pygame.time.get_ticks()
                         gamestate = "defend"
+                        if gamestats["currentmonster"] == planto:
+                            planto.movey = randint(2+round,round*2+4)
                         round += 1
                         continue
                     elif matchcol == "yellow":
@@ -1029,6 +1075,8 @@ while running:
                         last = pygame.time.get_ticks()
                         newlast = pygame.time.get_ticks()
                         gamestate = "defend"
+                        if gamestats["currentmonster"] == planto:
+                            planto.movey = randint(2+round,round*2+4)
                         round += 1
                         player.health += thishlth
                         if player.health > 20:
@@ -1069,16 +1117,12 @@ while running:
 
             pygame.draw.rect(screen, (0,0,0), (SCREEN_WIDTH/2-150,SCREEN_HEIGHT/2-150,300,300))
 
+            screen.blit(shoota, (SCREEN_WIDTH/2-shootarect.w/2,SCREEN_HEIGHT/2+150-shootarect.h))
+
             if now-newlast >= 11500:
                 utheart.rect.center = [SCREEN_WIDTH/2, SCREEN_HEIGHT/2]
-                mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
-                mypipe.rect = mypipe.image.get_rect()
-                mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
-                mypipe.rect.left = leftmostbox-200
-                myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(1,250)))
-                myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
-                myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
-                myupsidedownpipe.rect.left = leftmostbox-200
+                for testp in peaobjs:
+                    testp.reset()
                 """
                 golclub2.rect.right = rightmostbox+200
                 golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
@@ -1094,57 +1138,28 @@ while running:
                 continue
 
             if now-last >= 1500:
-                if mypipe.rect.x >= SCREEN_WIDTH/2-150 and mypipe.rect.right <= SCREEN_WIDTH/2+150:
-                    screen.blit(mypipe.image, (mypipe.rect.x,mypipe.rect.y))
-                mypipe.move((round+1)*1.5)
-                if myupsidedownpipe.rect.x >= SCREEN_WIDTH/2-150 and myupsidedownpipe.rect.right <= SCREEN_WIDTH/2+150:
-                    screen.blit(myupsidedownpipe.image, (myupsidedownpipe.rect.x, myupsidedownpipe.rect.y))
-                myupsidedownpipe.move((round+1)*1.5)
-                """
-                if round >= 2:
-                    screen.blit(golclub2.image, (golclub2.rect.x,golclub2.rect.y))
-                    golclub2.move(-5)
-                if round >= 3:
-                    screen.blit(golclub3.image, (golclub3.rect.x,golclub3.rect.y))
-                    golclub3.move(5)
-                if round >= 4:
-                    screen.blit(golclub4.image, (golclub4.rect.x,golclub4.rect.y))
-                    golclub4.move(-5)
-                """
-                if utheart.rect.colliderect(mypipe.rect) or utheart.rect.colliderect(myupsidedownpipe.rect):
-                    sound_effects_channel.play(metal_pipe_sound)
-                    player.health -= 2
-                    if player.health == 0:
-                        running = False
-                        break
-                    mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
-                    mypipe.rect = mypipe.image.get_rect()
-                    mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
-                    mypipe.rect.left = leftmostbox-200
-                    myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(20,250)))
-                    myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
-                    myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
-                    myupsidedownpipe.rect.left = leftmostbox-200
-                    """
-                    golclub2.rect.right = rightmostbox+200
-                    golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
-                    golclub3.rect.top = upmostbox-200
-                    golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
-                    golclub4.rect.bottom = downmostbox+200
-                    golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
-                    """
+                for testp in peaobjs:
 
-            if mypipe.rect.right >= rightmostbox+200:
-                mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
-                mypipe.rect = mypipe.image.get_rect()
-                mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
-                mypipe.rect.left = leftmostbox-200
+                    screen.blit(testp.image, (testp.rect.x,testp.rect.y))
 
-            if myupsidedownpipe.rect.right >= rightmostbox+200:
-                myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(20,250)))
-                myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
-                myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
-                myupsidedownpipe.rect.left = leftmostbox-200
+                    testp.move()
+                    testp.checks()
+                    if utheart.rect.colliderect(testp.rect):
+                        sound_effects_channel.play(metal_pipe_sound)
+                        player.health -= 2
+                        if player.health == 0:
+                            running = False
+                            break
+                        for testp in peaobjs:
+                            testp.reset()
+                        """
+                        golclub2.rect.right = rightmostbox+200
+                        golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+                        golclub3.rect.top = upmostbox-200
+                        golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+                        golclub4.rect.bottom = downmostbox+200
+                        golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+                        """
 
             """
 
