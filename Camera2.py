@@ -126,8 +126,8 @@ class CameraGroup(pygame.sprite.Group):
         
 
         # Tilemap offset
-        self.tilemap_offset_x = -2304  # Horizontal offset
-        self.tilemap_offset_y = -4736   # Vertical offset
+        self.tilemap_offset_x = 0 #-2304 big map's values # Horizontal offset
+        self.tilemap_offset_y = 0 #-4736 big map's values  # Vertical offset
 
 
     def box_target_camera(self, target):
