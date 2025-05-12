@@ -28,13 +28,13 @@ metal_pipe_sound = pygame.mixer.Sound("metalpipe.mp3")
 metal_pipe_sound.set_volume(1.0)  
 compinf = pygame.display.Info()
 
-SCREEN_WIDTH = 1280 #compinf.current_w #1280
-SCREEN_HEIGHT = 720 #compinf.current_h #720
+SCREEN_WIDTH =  compinf.current_w #1280
+SCREEN_HEIGHT = compinf.current_h #720
 
 wrapwidth = 2
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
-tmx_data = load_pygame('map/maptake2.tmx')
+tmx_data = load_pygame('map/smallmap.tmx')
 
 cameraX = 0
 cameraY = 0
@@ -1194,6 +1194,7 @@ while running:
                         screen.blit(golclub4.image, (golclub4.rect.x,golclub4.rect.y))
                     golclub4.move(-5)
                 if utheart.rect.colliderect(golclub.rect) or utheart.rect.colliderect(golclub2.rect) or utheart.rect.colliderect(golclub3.rect) or utheart.rect.colliderect(golclub4.rect):
+                    sound_effects_channel.stop()
                     sound_effects_channel.play(vine_boom_sound)
                     player.health -= 2
                     if player.health == 0:
