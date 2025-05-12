@@ -3,6 +3,30 @@ from random import randint
 
 image_cache={}
 
+class Wizard(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.health = 15
+        self.sprites = []
+        names = []
+        for i in range(4):
+            names.append('wiz00'+str(i)+'.png')
+        for i in names:
+            tempimg = pygame.image.load(i)
+            tempimg = pygame.transform.scale(tempimg, (200,200))
+            self.sprites.append(tempimg)
+        self.currentsprite = 0
+        self.image = self.sprites[self.currentsprite]
+        self.rect = self.image.get_rect()
+        self.isdefeated = False
+    def idleanimation(self):
+        self.currentsprite += 0.1
+
+        if self.currentsprite >= len(self.sprites):
+            self.currentsprite = 0
+
+        self.image = self.sprites[int(self.currentsprite)]
+
 class PSHOOTER(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -176,6 +200,10 @@ class CameraGroup(pygame.sprite.Group):
             elif isinstance(sprite, PSHOOTER):  # Check if the sprite is an NPC
                 # Draw NPCs at their absolute positions
                 if not(player.isplantdefeated):
+                    self.display_surface.blit(sprite.image, sprite.rect.topleft-self.offset)
+            elif isinstance(sprite, Wizard):  # Check if the sprite is an NPC
+                # Draw NPCs at their absolute positions
+                if not(player.iswizdefeated):
                     self.display_surface.blit(sprite.image, sprite.rect.topleft-self.offset)
             else:
                 # Draw other sprites with the camera offset

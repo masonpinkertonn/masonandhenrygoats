@@ -20,6 +20,9 @@ current_music = None
 wrapper = textwrap.TextWrapper(width=30)
 
 
+cols = ["black", "green", "blue", "yellow", "orange", "pink", "purple"]
+
+
 
 sound_effects_channel = pygame.mixer.Channel(1)
 vine_boom_sound = pygame.mixer.Sound("vine-boom.mp3")
@@ -76,6 +79,7 @@ class Player(pygame.sprite.Sprite):
         self.isgolemdefeated = False
         self.isbirddefeated = False
         self.isplantdefeated = False
+        self.iswizdefeated = False
         self.goingup = False
         self.goingdown = False
         self.goingleft = False
@@ -145,6 +149,10 @@ birb = Bird()
 
 planto = PSHOOTER()
 
+thiswiz = Wizard()
+
+thiswiz.rect.x = 500
+
 def golemdialogue(currentline, fname):
     dialogue = open(fname, 'r')
     lines = []
@@ -193,6 +201,7 @@ golem = Golem()
 newdialogueline = 0
 golemdialogueline = 0
 plantdialogueline = 0
+wizdialogueline = 0
 
 last = pygame.time.get_ticks()
 now = pygame.time.get_ticks()
@@ -205,6 +214,7 @@ class ebutton:
         self.isshowingbirddialogue = False
         self.isshowingplantdialogue = False
         self.isshowingshop = False
+        self.isshowingwizdialogue = False
         self.rect = self.image.get_rect()
 
 e_button = ebutton()
@@ -288,15 +298,38 @@ class Heart(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (25,25))
         self.rect = self.image.get_rect()
         self.rect.center = [SCREEN_WIDTH/2,SCREEN_HEIGHT/2]
-    def checks(self):
-        if self.rect.left <= SCREEN_WIDTH/2-150:
-            self.rect.left = SCREEN_WIDTH/2-150
-        if self.rect.right >= SCREEN_WIDTH/2+150:
-            self.rect.right = SCREEN_WIDTH/2+150
-        if self.rect.top <= SCREEN_HEIGHT/2-150:
-            self.rect.top = SCREEN_HEIGHT/2-150
-        if self.rect.bottom >= SCREEN_HEIGHT/2+150:
-            self.rect.bottom = SCREEN_HEIGHT/2+150
+    def checks(self, now, newnewlast):
+        if gamestats["currentmonster"] != thiswiz:
+            if self.rect.left <= SCREEN_WIDTH/2-150:
+                self.rect.left = SCREEN_WIDTH/2-150
+            if self.rect.right >= SCREEN_WIDTH/2+150:
+                self.rect.right = SCREEN_WIDTH/2+150
+            if self.rect.top <= SCREEN_HEIGHT/2-150:
+                self.rect.top = SCREEN_HEIGHT/2-150
+            if self.rect.bottom >= SCREEN_HEIGHT/2+150:
+                self.rect.bottom = SCREEN_HEIGHT/2+150
+        else:
+            if self.rect.left <= gamerect2.left:
+                self.rect.left = gamerect2.left
+                if now - newnewlast >= 200:
+                    player.health -= 1
+                    newnewlast = pygame.time.get_ticks()
+            if self.rect.right >= gamerect2.right:
+                self.rect.right = gamerect2.right
+                if now - newnewlast >= 200:
+                    player.health -= 1
+                    newnewlast = pygame.time.get_ticks()
+            if self.rect.top <= gamerect2.top:
+                self.rect.top = gamerect2.top
+                if now - newnewlast >= 200:
+                    player.health -= 1
+                    newnewlast = pygame.time.get_ticks()
+            if self.rect.bottom >= gamerect2.bottom:
+                self.rect.bottom = gamerect2.bottom
+                if now - newnewlast >= 200:
+                    player.health -= 1
+                    newnewlast = pygame.time.get_ticks()
+            return newnewlast
 
 leftmostbox = SCREEN_WIDTH/2-150
 rightmostbox = SCREEN_WIDTH/2+150
@@ -361,10 +394,19 @@ tshb = HealthBar()
 monstahb = MonsterHB(golem)
 birbhb = MonsterHB(birb)
 planthb = MonsterHB(planto)
+wizhb = MonsterHB(thiswiz)
 
 gamestats = {"currentmonster":golem, "route":"pacifist", "money":0}
 
 playerinv = {}
+
+
+gamerect1 = pygame.Rect(SCREEN_WIDTH/2-160,SCREEN_HEIGHT/2-160,320,320) #pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-160,SCREEN_HEIGHT/2-160,320,320))
+gr1isposx = True
+gr1isposy = True
+gr2col = "black"
+
+gamerect2 = pygame.Rect(SCREEN_WIDTH/2-150,SCREEN_HEIGHT/2-150,300,300)
 
 
 shoota = pygame.image.load('peashooter.png')
@@ -386,12 +428,14 @@ camera_group.add(golem)
 camera_group.add(birb)
 camera_group.add(skibidutton)
 camera_group.add(planto)
+camera_group.add(thiswiz)
 minime = load_image('Wraith_01_Idle_000.png', (50.25, 72.25))
 minigol = load_image('Golem_01_Idle Blinking_000.png', (50.25, 72.25))
 sansbutt = load_image("SANS.png", (225, 300))
 truesans = load_image("skibidi.png", (1024 // 5, 1346 // 5))
 minibird = load_image('birdie000.png', (50.25, 72.25))
 miniplant = load_image('plant000.png', (50.25, 72.25))
+miniwiz = load_image('wiz000.png', (50.25,72.25))
 
 #75x100
 srect = sansbutt.get_rect()
@@ -442,6 +486,8 @@ testp3 = Pea()
 testp4 = Pea()
 testp5 = Pea()
 
+incval = 3
+
 peaobjs = [testp, testp2, testp3, testp4, testp5]
 
 # Create NPCs
@@ -452,7 +498,7 @@ peaobjs = [testp, testp2, testp3, testp4, testp5]
 npc_list = [golem, birb]
 pygame.mixer.Sound.play(pygame.mixer.Sound("Balatro - Complete Original Soundtrack (Official).mp3"))
 
-mypeeps = [golem, birb, planto, skibidutton]
+mypeeps = [golem, birb, planto, skibidutton, thiswiz]
 
 while running:
     """if player.rect.x > SCREEN_WIDTH /4 *3:
@@ -562,6 +608,41 @@ while running:
             else:
                 e_button.isshowingplantdialogue = False
                 plantdialogueline = 0
+            #if player.rect.colliderect(planto.rect):
+                #docollisions(planto.rect)
+
+        if not(player.iswizdefeated) and not(thiswiz.isdefeated):
+            w = golemdialogue(wizdialogueline, "planty.npc")
+
+            wizdialogueline = w[1]
+
+            wiztxtrct = w[3]
+
+            thiswiz.idleanimation()
+            if expansion.colliderect(thiswiz.rect):
+                #screen.blit(e_button.image, (planto.rect.x+50,planto.rect.y))
+                if w[2] == "monster":
+                    pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
+                    tsrect = pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-290,SCREEN_HEIGHT-240,580,180))
+                    screen.blit(miniwiz, (SCREEN_WIDTH/2-280,tsrect.centery-36.125))
+                    if isinstance(w[0], list):
+                        screen.blit(w[0][0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
+                        screen.blit(w[0][1], (SCREEN_WIDTH/2-280+50.25+25,SCREEN_HEIGHT-200))
+                    else:
+                        screen.blit(w[0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
+                elif w[2] == "player":
+                    pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
+                    pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-290,SCREEN_HEIGHT-240,580,180))
+                    screen.blit(minime, (SCREEN_WIDTH/2-280,tsrect.centery-36.125))
+                    if isinstance(w[0], list):
+                        screen.blit(w[0][0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
+                        screen.blit(w[0][1], (SCREEN_WIDTH/2-280+50.25+25,SCREEN_HEIGHT-200))
+                    else:
+                        screen.blit(w[0], (SCREEN_WIDTH/2-280+50.25,SCREEN_HEIGHT-230))
+                e_button.isshowingwizdialogue = True
+            else:
+                e_button.isshowingwizdialogue = False
+                wizdialogueline = 0
             #if player.rect.colliderect(planto.rect):
                 #docollisions(planto.rect)
 
@@ -708,6 +789,16 @@ while running:
                     e_button.isshowingplantdialogue = False
                     continue
                 plantdialogueline += 1
+        if key[pygame.K_e] and e_button.isshowingwizdialogue:
+            if now - last >= 700:
+                last = pygame.time.get_ticks()
+                if wizdialogueline == 5:
+                    wizdialogueline = 0
+                    gamestate="fight"
+                    gamestats["currentmonster"] = thiswiz
+                    e_button.isshowingwizdialogue = False
+                    continue
+                wizdialogueline += 1
         if key[pygame.K_e] and e_button.isshowingshop:
             gamestate = "shop"
             continue
@@ -739,6 +830,9 @@ while running:
         elif gamestats["currentmonster"] == planto:
             planthb.upd()
             planthb.drawit()
+        elif gamestats["currentmonster"] == thiswiz:
+            wizhb.upd()
+            wizhb.drawit()
 
         gamestats["currentmonster"].idleanimation()
 
@@ -804,6 +898,9 @@ while running:
         elif gamestats["currentmonster"] == planto:
             planthb.upd()
             planthb.drawit()
+        elif gamestats["currentmonster"] == thiswiz:
+            wizhb.upd()
+            wizhb.drawit()
 
         #print(gamestate)
 
@@ -831,6 +928,9 @@ while running:
                 elif gamestats["currentmonster"] == planto:
                     player.isplantdefeated = True
                     planto.isdefeated = True
+                elif gamestats["currentmonster"] == thiswiz:
+                    player.iswizdefeated = True
+                    thiswiz.isdefeated = True
                 tempx = SCREEN_WIDTH/2-275
                 linegoinleft = False
                 linestopped = False
@@ -844,9 +944,10 @@ while running:
             linegoinleft = False
             last = pygame.time.get_ticks()
             gamestate = "defend"
-            if gamestats["currentmonster"] == planto:
-                planto.movey = randint(2+round,round*2+4)
+            #if gamestats["currentmonster"] == planto:
+                #planto.movey = randint(2+round,round*2+4)
             newlast = pygame.time.get_ticks()
+            newnewlast = pygame.time.get_ticks()
             round += 1
             continue
 
@@ -876,6 +977,9 @@ while running:
                     elif gamestats["currentmonster"] == planto:
                         player.isplantdefeated = True
                         planto.isdefeated = True
+                    elif gamestats["currentmonster"] == thiswiz:
+                        player.iswizdefeated = True
+                        thiswiz.isdefeated = True
                     tempx = SCREEN_WIDTH/2-275
                     linegoinleft = False
                     linestopped = False
@@ -889,9 +993,10 @@ while running:
                 linegoinleft = False
                 last = pygame.time.get_ticks()
                 gamestate = "defend"
-                if gamestats["currentmonster"] == planto:
-                    planto.movey = randint(2+round,round*2+4)
+                #if gamestats["currentmonster"] == planto:
+                #    planto.movey = randint(2+round,round*2+4)
                 newlast = pygame.time.get_ticks()
+                newnewlast = pygame.time.get_ticks()
                 round += 1
                 continue
                 
@@ -943,6 +1048,9 @@ while running:
         elif gamestats["currentmonster"] == planto:
             planthb.upd()
             planthb.drawit()
+        elif gamestats["currentmonster"] == thiswiz:
+            wizhb.upd()
+            wizhb.drawit()
 
         gamestats["currentmonster"].idleanimation()
 
@@ -976,9 +1084,10 @@ while running:
                     if matchcol == "white":
                         last = pygame.time.get_ticks()
                         newlast = pygame.time.get_ticks()
+                        newnewlast = pygame.time.get_ticks()
                         gamestate = "defend"
-                        if gamestats["currentmonster"] == planto:
-                            planto.movey = randint(2+round,round*2+4)
+                        #if gamestats["currentmonster"] == planto:
+                        #    planto.movey = randint(2+round,round*2+4)
                         round += 1
                         continue
                     elif matchcol == "yellow":
@@ -992,6 +1101,9 @@ while running:
                         elif gamestats["currentmonster"] == planto:
                             player.isplantdefeated = True
                             planto.isdefeated = True
+                        elif gamestats["currentmonster"] == thiswiz:
+                            player.iswizdefeated = True
+                            thiswiz.isdefeated = True
                         tempx = SCREEN_WIDTH/2-275
                         linegoinleft = False
                         linestopped = False
@@ -1029,6 +1141,9 @@ while running:
         elif gamestats["currentmonster"] == planto:
             planthb.upd()
             planthb.drawit()
+        elif gamestats["currentmonster"] == thiswiz:
+            wizhb.upd()
+            wizhb.drawit()
 
         gamestats["currentmonster"].idleanimation()
 
@@ -1074,9 +1189,10 @@ while running:
                                 playerinv.pop(list(playerinv.keys())[mifontes.index(z)])
                         last = pygame.time.get_ticks()
                         newlast = pygame.time.get_ticks()
+                        newnewlast = pygame.time.get_ticks()
                         gamestate = "defend"
-                        if gamestats["currentmonster"] == planto:
-                            planto.movey = randint(2+round,round*2+4)
+                        #if gamestats["currentmonster"] == planto:
+                        #    planto.movey = randint(2+round,round*2+4)
                         round += 1
                         player.health += thishlth
                         if player.health > 20:
@@ -1091,7 +1207,124 @@ while running:
 
     elif gamestate == "defend":
 
-        if gamestats["currentmonster"] == planto:
+        if gamestats["currentmonster"] == thiswiz:
+            screen.fill("black")
+
+            thiswiz.idleanimation()
+
+            screen.blit(thiswiz.image, (thiswiz.fakex, thiswiz.fakey))
+
+            tshb.upd()
+            tshb.drawit()
+
+            if gamestats["currentmonster"] == golem:
+                monstahb.upd()
+                monstahb.drawit()
+            elif gamestats["currentmonster"] == birb:
+                birbhb.upd()
+                birbhb.drawit()
+            elif gamestats["currentmonster"] == planto:
+                planthb.upd()
+                planthb.drawit()
+            elif gamestats["currentmonster"] == thiswiz:
+                wizhb.upd()
+                wizhb.drawit()
+
+            x=utheart.checks(now, newnewlast)
+            newnewlast = x
+
+            if player.health == 0:
+                running = False
+                break
+
+            pygame.draw.rect(screen, "white", gamerect1)
+
+            pygame.draw.rect(screen, gr2col, gamerect2)
+
+            #screen.blit(shoota, (SCREEN_WIDTH/2-shootarect.w/2,SCREEN_HEIGHT/2+150-shootarect.h))
+
+            if now-newlast >= 11500:
+                utheart.rect.center = [SCREEN_WIDTH/2, SCREEN_HEIGHT/2]
+                gamerect1.x = SCREEN_WIDTH/2-160
+                gamerect2.x = SCREEN_WIDTH/2-150
+                gamerect1.y = SCREEN_HEIGHT/2-160
+                gamerect2.y = SCREEN_HEIGHT/2-150
+                gr2col = "black"
+                #for testp in peaobjs:
+                #    testp.reset()
+                """
+                golclub2.rect.right = rightmostbox+200
+                golclub2.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
+                golclub3.rect.top = upmostbox-200
+                golclub3.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+                golclub4.rect.bottom = downmostbox+200
+                golclub4.rect.right = random.randint(int(SCREEN_WIDTH/2-112.5),int(SCREEN_WIDTH/2+150))
+                """
+                gamestate = "fight"
+                tempx = SCREEN_WIDTH/2-275
+                linegoinleft = False
+                linestopped = False
+                continue
+
+            if now-last >= 1500:
+                if round >= 4:
+                    incval = 5
+                elif round >= 3:
+                    incval = 4
+                elif round >= 2:
+                    incval = 3
+                else:
+                    incval = 2
+                if gr1isposx:
+                    gamerect2.x+=incval
+                    gamerect1.x+=incval
+                else:
+                    gamerect2.x-=incval
+                    gamerect1.x-=incval
+                if gr1isposy:
+                    gamerect2.y+=incval
+                    gamerect1.y+=incval
+                else:
+                    gamerect2.y-=incval
+                    gamerect1.y-=incval
+                if gamerect1.right >= SCREEN_WIDTH:
+                    gr1isposx = False
+                    gr2col = random.choice(cols)
+                if gamerect1.left <= 0:
+                    gr1isposx = True
+                    gr2col = random.choice(cols)
+                if gamerect1.top <= 0:
+                    gr1isposy = True
+                    gr2col = random.choice(cols)
+                if gamerect1.bottom >= SCREEN_HEIGHT:
+                    gr1isposy = False
+                    gr2col = random.choice(cols)
+
+            screen.blit(utheart.image, (utheart.rect.x, utheart.rect.y))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    break
+
+            key = pygame.key.get_pressed()
+            
+            if key[pygame.K_UP]:
+                utheart.rect.y -= 9
+            if key[pygame.K_DOWN]:
+                utheart.rect.y += 9
+            if key[pygame.K_LEFT]:
+                utheart.rect.x -= 9
+            if key[pygame.K_RIGHT]:
+                utheart.rect.x += 9
+            
+            pygame.display.flip()
+
+            clock.tick(60)
+
+            now = pygame.time.get_ticks()
+
+        elif gamestats["currentmonster"] == planto:
             screen.fill("black")
 
             planto.idleanimation()
@@ -1111,7 +1344,7 @@ while running:
                 planthb.upd()
                 planthb.drawit()
 
-            utheart.checks()
+            utheart.checks(now,newlast)
 
             pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-160,SCREEN_HEIGHT/2-160,320,320))
 
@@ -1184,11 +1417,11 @@ while running:
             
             if key[pygame.K_UP]:
                 utheart.rect.y -= 6
-            elif key[pygame.K_DOWN]:
+            if key[pygame.K_DOWN]:
                 utheart.rect.y += 6
-            elif key[pygame.K_LEFT]:
+            if key[pygame.K_LEFT]:
                 utheart.rect.x -= 6
-            elif key[pygame.K_RIGHT]:
+            if key[pygame.K_RIGHT]:
                 utheart.rect.x += 6
             
             pygame.display.flip()
@@ -1225,7 +1458,7 @@ while running:
                 planthb.upd()
                 planthb.drawit()
 
-            utheart.checks()
+            utheart.checks(now,newlast)
 
             pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-160,SCREEN_HEIGHT/2-160,320,320))
 
@@ -1331,11 +1564,11 @@ while running:
             
             if key[pygame.K_UP]:
                 utheart.rect.y -= 6
-            elif key[pygame.K_DOWN]:
+            if key[pygame.K_DOWN]:
                 utheart.rect.y += 6
-            elif key[pygame.K_LEFT]:
+            if key[pygame.K_LEFT]:
                 utheart.rect.x -= 6
-            elif key[pygame.K_RIGHT]:
+            if key[pygame.K_RIGHT]:
                 utheart.rect.x += 6
             
             pygame.display.flip()
@@ -1364,7 +1597,7 @@ while running:
                 planthb.upd()
                 planthb.drawit()
 
-            utheart.checks()
+            utheart.checks(now,newlast)
 
             pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-160,SCREEN_HEIGHT/2-160,320,320))
 
@@ -1444,11 +1677,11 @@ while running:
             
             if key[pygame.K_UP]:
                 utheart.rect.y -= 6
-            elif key[pygame.K_DOWN]:
+            if key[pygame.K_DOWN]:
                 utheart.rect.y += 6
-            elif key[pygame.K_LEFT]:
+            if key[pygame.K_LEFT]:
                 utheart.rect.x -= 6
-            elif key[pygame.K_RIGHT]:
+            if key[pygame.K_RIGHT]:
                 utheart.rect.x += 6
             
             pygame.display.flip()
