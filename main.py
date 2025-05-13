@@ -33,12 +33,12 @@ metal_pipe_sound = pygame.mixer.Sound("metalpipe.mp3")
 metal_pipe_sound.set_volume(1.0)  
 compinf = pygame.display.Info()
 
-SCREEN_WIDTH =  compinf.current_w #1280
-SCREEN_HEIGHT = compinf.current_h #720
+SCREEN_WIDTH = 1280 #compinf.current_w #1280
+SCREEN_HEIGHT = 720 #compinf.current_h #720
 
 wrapwidth = 2
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))#, pygame.FULLSCREEN)
 tmx_data = load_pygame('map/smallmap.tmx')
 
 cameraX = 0
@@ -52,17 +52,17 @@ def load_image(filename, scale=None):
         image_cache[filename] = image
     return image_cache[filename]
 
-for layer in tmx_data.layers:
+"""for layer in tmx_data.layers:
     if hasattr (layer, 'data'):
         #print(layer)
         for x,y,surf in layer.tiles():
             pos = (x * tmx_data.tilewidth, y * tmx_data.tileheight)
-            Tile(pos = pos, surf = surf, groups = sprite_group)
+            Tile(pos = pos, surf = surf, groups = sprite_group)"""
 
-for obj in tmx_data.objects:
+"""for obj in tmx_data.objects:
     pos = (obj.x, obj.y)
     if obj.image:
-        Tile(pos = pos, surf = obj.image, groups = sprite_group)
+        Tile(pos = pos, surf = obj.image, groups = sprite_group)"""
 
 
 class hitbutton:
@@ -149,11 +149,20 @@ class Player(pygame.sprite.Sprite):
 
 birb = Bird()
 
+birb.rect.x = 1500
+
+birb.rect.y = 900
+
 planto = PSHOOTER()
+
+planto.rect.x = 350
+planto.rect.y = 1000
 
 thiswiz = Wizard()
 
-thiswiz.rect.x = 500
+thiswiz.rect.x = 1000
+
+thiswiz.rect.y = 1300
 
 def golemdialogue(currentline, fname):
     dialogue = open(fname, 'r')
@@ -221,7 +230,8 @@ class ebutton:
 
 e_button = ebutton()
 
-golem.rect.y = 400
+golem.rect.y = 500
+golem.rect.x = 800
 
 gamestate = "main"
 
@@ -498,7 +508,7 @@ peaobjs = [testp, testp2, testp3, testp4, testp5]
 
 # Add NPCs to the list
 npc_list = [golem, birb]
-pygame.mixer.Sound.play(pygame.mixer.Sound("Balatro - Complete Original Soundtrack (Official).mp3"))
+#pygame.mixer.Sound.play(pygame.mixer.Sound("Balatro - Complete Original Soundtrack (Official).mp3"))
 
 mypeeps = [golem, birb, planto, skibidutton, thiswiz]
 

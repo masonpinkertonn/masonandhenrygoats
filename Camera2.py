@@ -87,6 +87,7 @@ class Bird(pygame.sprite.Sprite):
         for i in names:
             tempimg = pygame.image.load(i)
             tempimg = pygame.transform.scale(tempimg, (200,200))
+            tempimg = pygame.transform.flip(tempimg, True, False)
             self.sprites.append(tempimg)
         self.currentsprite = 0
         self.image = self.sprites[self.currentsprite]
@@ -185,6 +186,7 @@ class CameraGroup(pygame.sprite.Group):
                         x * self.tmx_data.tilewidth - self.offset.x + self.tilemap_offset_x,
                         y * self.tmx_data.tileheight - self.offset.y + self.tilemap_offset_y
                     )
+                    print(surf)
                     self.display_surface.blit(surf, pos)
 
         # Draw sprites
@@ -213,6 +215,6 @@ class CameraGroup(pygame.sprite.Group):
         for i in mypeeps:
             if not(i.isdefeated):
                 if expansion.colliderect(i.rect):
-                    self.display_surface.blit(e_button.image, (i.rect.center[0]-e_button.rect.w/2-self.offset[0],i.rect.center[1]-100-self.offset[1]))
+                    self.display_surface.blit(e_button.image, (i.rect.center[0]-e_button.rect.w/2-self.offset[0],i.rect.center[1]-150-self.offset[1]))
                 if player.rect.colliderect(i.rect):
                     player.docollisions(i.rect)
