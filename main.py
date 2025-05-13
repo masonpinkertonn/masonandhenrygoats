@@ -70,7 +70,7 @@ class hitbutton:
         self.width = width
         self.height = height
 gameover = pygame.image.load('gameover.png')
-
+wingame = pygame.image.load('wingame.png')
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -1543,6 +1543,31 @@ while running:
         screen.fill((0,0,0))
         pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-400,SCREEN_HEIGHT/2-200,800,400))
         screen.blit(gameover, (SCREEN_WIDTH/2,SCREEN_HEIGHT/2))
+
+        if now-last >= 15000:
+            running = False
+            break
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                break
+        
+        pygame.display.flip()
+        clock.tick(60)
+        now = pygame.time.get_ticks()
+    elif gamestate == "wingame":
+        if current_music != "gameover":
+            if pygame.mixer.music.get_busy():  # Check if music is currently playing
+                pygame.mixer.music.fadeout(500)  # Fade out the current music over 500ms
+            pygame.mixer.music.load(music_files["gameover"])  # Load the fight music
+            pygame.mixer.music.play(-1)  # Play the fight music in a loop
+            current_music = "gameover"
+        screen.fill("black")
+
+        screen.fill((0,0,0))
+        pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-400,SCREEN_HEIGHT/2-200,800,400))
+        screen.blit(wingame, (SCREEN_WIDTH/2,SCREEN_HEIGHT/2))
 
         if now-last >= 15000:
             running = False
