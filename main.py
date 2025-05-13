@@ -6,6 +6,7 @@ from pygame_aseprite_animation import *
 from pytmx.util_pygame import load_pygame
 from top_down_sprites import *
 from Camera2 import *
+import time
 pygame.init()
 pygame.font.init()
 pygame.mixer.init()
@@ -15,6 +16,7 @@ inshop = {"Pie": ["Pie",5,1], "Cake":["Cake",10,2], "Super Health Potion":["Supe
 music_files = {
     "main": "Balatro - Complete Original Soundtrack (Official).mp3",
     "fight": "Doom Eternal OST - The Only Thing They Fear Is You (Mick Gordon) [Doom Eternal Theme].mp3",
+    "gameover": "gameover.mp3",
 }
 current_music = None
 wrapper = textwrap.TextWrapper(width=30)
@@ -70,8 +72,8 @@ class hitbutton:
         self.y = y
         self.width = width
         self.height = height
-
-
+gameover = pygame.image.load('gameover.png')
+wingame = pygame.image.load('wingame.png')
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -1381,8 +1383,9 @@ while running:
                         sound_effects_channel.play(metal_pipe_sound)
                         player.health -= 2
                         if player.health == 0:
-                            running = False
-                            break
+                            gamestate = "gameover"
+                            last = pygame.time.get_ticks()
+                            continue
                         for testp in peaobjs:
                             testp.reset()
                         """
@@ -1510,8 +1513,9 @@ while running:
                     sound_effects_channel.play(metal_pipe_sound)
                     player.health -= 2
                     if player.health == 0:
-                        running = False
-                        break
+                        gamestate = "gameover"
+                        last = pygame.time.get_ticks()
+                        continue
                     mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
                     mypipe.rect = mypipe.image.get_rect()
                     mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
@@ -1640,8 +1644,9 @@ while running:
                     sound_effects_channel.play(vine_boom_sound)
                     player.health -= 2
                     if player.health == 0:
-                        running = False
-                        break
+                        gamestate = "gameover"
+                        last = pygame.time.get_ticks()
+                        continue
                     golclub.rect.left = leftmostbox-200
                     golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
                     golclub2.rect.right = rightmostbox+200
@@ -1758,5 +1763,55 @@ while running:
         clock.tick(60)
 
         now = pygame.time.get_ticks()
+    
+    elif gamestate == "gameover":
+        if current_music != "gameover":
+            if pygame.mixer.music.get_busy():  # Check if music is currently playing
+                pygame.mixer.music.fadeout(500)  # Fade out the current music over 500ms
+            pygame.mixer.music.load(music_files["gameover"])  # Load the fight music
+            pygame.mixer.music.play(-1)  # Play the fight music in a loop
+            current_music = "gameover"
+        screen.fill("black")
 
+        screen.fill((0,0,0))
+        pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-400,SCREEN_HEIGHT/2-200,800,400))
+        screen.blit(gameover, (SCREEN_WIDTH/2,SCREEN_HEIGHT/2))
+
+        if now-last >= 15000:
+            running = False
+            break
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                break
+        
+        pygame.display.flip()
+        clock.tick(60)
+        now = pygame.time.get_ticks()
+    elif gamestate == "wingame":
+        if current_music != "gameover":
+            if pygame.mixer.music.get_busy():  # Check if music is currently playing
+                pygame.mixer.music.fadeout(500)  # Fade out the current music over 500ms
+            pygame.mixer.music.load(music_files["gameover"])  # Load the fight music
+            pygame.mixer.music.play(-1)  # Play the fight music in a loop
+            current_music = "gameover"
+        screen.fill("black")
+
+        screen.fill((0,0,0))
+        pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-400,SCREEN_HEIGHT/2-200,800,400))
+        screen.blit(wingame, (SCREEN_WIDTH/2,SCREEN_HEIGHT/2))
+
+        if now-last >= 15000:
+            running = False
+            break
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                break
+        
+        pygame.display.flip()
+        clock.tick(60)
+        now = pygame.time.get_ticks()
 pygame.quit()
