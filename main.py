@@ -74,6 +74,7 @@ class hitbutton:
         self.height = height
 gameover = pygame.image.load('gameover.png')
 wingame = pygame.image.load('wingame.png')
+wingame = pygame.transform.scale(wingame, (SCREEN_WIDTH, SCREEN_HEIGHT))
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -1401,6 +1402,7 @@ while running:
                     testp.move()
                     testp.checks()
                     if utheart.rect.colliderect(testp.rect):
+                        sound_effects_channel.stop()
                         sound_effects_channel.play(metal_pipe_sound)
                         player.health -= 2
                         if player.health <= 0:
@@ -1531,6 +1533,7 @@ while running:
                     golclub4.move(-5)
                 """
                 if utheart.rect.colliderect(mypipe.rect) or utheart.rect.colliderect(myupsidedownpipe.rect):
+                    sound_effects_channel.stop()
                     sound_effects_channel.play(metal_pipe_sound)
                     player.health -= 2
                     if player.health <= 0:
