@@ -34,7 +34,7 @@ metal_pipe_sound.set_volume(1.0)
 compinf = pygame.display.Info()
 
 SCREEN_WIDTH = 1280 #compinf.current_w #1280
-SCREEN_HEIGHT = 720 #compinf.current_h #720
+SCREEN_HEIGHT = 720#compinf.current_h #720
 
 wrapwidth = 2
 
@@ -324,22 +324,22 @@ class Heart(pygame.sprite.Sprite):
             if self.rect.left <= gamerect2.left:
                 self.rect.left = gamerect2.left
                 if now - newnewlast >= 200:
-                    player.health -= 1
+                    player.health -= 2
                     newnewlast = pygame.time.get_ticks()
             if self.rect.right >= gamerect2.right:
                 self.rect.right = gamerect2.right
                 if now - newnewlast >= 200:
-                    player.health -= 1
+                    player.health -= 2
                     newnewlast = pygame.time.get_ticks()
             if self.rect.top <= gamerect2.top:
                 self.rect.top = gamerect2.top
                 if now - newnewlast >= 200:
-                    player.health -= 1
+                    player.health -= 2
                     newnewlast = pygame.time.get_ticks()
             if self.rect.bottom >= gamerect2.bottom:
                 self.rect.bottom = gamerect2.bottom
                 if now - newnewlast >= 200:
-                    player.health -= 1
+                    player.health -= 2
                     newnewlast = pygame.time.get_ticks()
             return newnewlast
 
@@ -510,7 +510,9 @@ peaobjs = [testp, testp2, testp3, testp4, testp5]
 npc_list = [golem, birb]
 #pygame.mixer.Sound.play(pygame.mixer.Sound("Balatro - Complete Original Soundtrack (Official).mp3"))
 
-mypeeps = [golem, birb, planto, skibidutton, thiswiz]
+mypeeps = [golem, birb, planto, thiswiz]
+
+myenemies = [golem, birb, planto, thiswiz]
 
 while running:
     """if player.rect.x > SCREEN_WIDTH /4 *3:
@@ -518,6 +520,8 @@ while running:
     elif player.rect.x < SCREEN_WIDTH / 6:
         cameraX += 5"""
     if gamestate == "main":
+
+        #print(golem.isdefeated)
         
         if current_music != "main":
             pygame.mixer.music.stop()
@@ -526,7 +530,7 @@ while running:
         current_music = "main"
         camera_offset_x = player.rect.centerx - SCREEN_WIDTH // 2
         camera_offset_y = player.rect.centery - SCREEN_HEIGHT // 2
-        screen.fill((0, 0, 0))
+        screen.fill((0, 0, 255))
         # Define camera thresholds
         CAMERA_THRESHOLD_X = SCREEN_WIDTH // 4
         CAMERA_THRESHOLD_Y = SCREEN_HEIGHT // 4
@@ -545,7 +549,7 @@ while running:
             camera_offset_y += player.rect.centery - CAMERA_THRESHOLD_Y
         # Camera.box_target_camera(Player.rect, SCREEN_WIDTH, SCREEN_HEIGHT)
         sprite_group.draw(screen)
-        camera_group.custom_draw(player, mypeeps, e_button)
+        camera_group.custom_draw(player, mypeeps, e_button, myenemies)
        # screen.blit(player.image, (player.rect.x, player.rect.y))
 
         #print(player.rect.y)
@@ -596,7 +600,7 @@ while running:
             planttxtrct = y[3]
 
             planto.idleanimation()
-            if expansion.colliderect(planto.rect):
+            if expansion.colliderect(planto.rect) and golem.isdefeated and birb.isdefeated:
                 #screen.blit(e_button.image, (planto.rect.x+50,planto.rect.y))
                 if y[2] == "monster":
                     pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
@@ -631,7 +635,7 @@ while running:
             wiztxtrct = w[3]
 
             thiswiz.idleanimation()
-            if expansion.colliderect(thiswiz.rect):
+            if expansion.colliderect(thiswiz.rect) and planto.isdefeated and birb.isdefeated and golem.isdefeated:
                 #screen.blit(e_button.image, (planto.rect.x+50,planto.rect.y))
                 if w[2] == "monster":
                     pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
@@ -671,7 +675,7 @@ while running:
             #screen.blit(birb.image, (birb.rect.x,birb.rect.y))
             #camera_group.custom_draw(birb)
             birb.idleanimation()
-            if expansion.colliderect(birb.rect):
+            if expansion.colliderect(birb.rect) and golem.isdefeated:
                 #screen.blit(e_button.image, (birb.rect.x+50,birb.rect.y))
                 if z[2] == "monster":
                     pygame.draw.rect(screen, "white", (SCREEN_WIDTH/2-300,SCREEN_HEIGHT-250,600,200))
@@ -1634,21 +1638,22 @@ while running:
                 continue
 
             if now-last >= 1500:
+                mvspd = 7
                 #if golclub.rect.x >= SCREEN_WIDTH/2-150 and golclub.rect.right <= SCREEN_WIDTH/2+150:
                 screen.blit(golclub.image, (golclub.rect.x,golclub.rect.y))
-                golclub.move(5)
+                golclub.move(mvspd)
                 if round >= 2:
                     #if golclub2.rect.x >= SCREEN_WIDTH/2-150 and golclub2.rect.right <= SCREEN_WIDTH/2+150:
                     screen.blit(golclub2.image, (golclub2.rect.x,golclub2.rect.y))
-                    golclub2.move(-5)
+                    golclub2.move(-mvspd)
                 if round >= 3:
                     #if golclub3.rect.x >= SCREEN_WIDTH/2-150 and golclub3.rect.right <= SCREEN_WIDTH/2+150:
                     screen.blit(golclub3.image, (golclub3.rect.x,golclub3.rect.y))
-                    golclub3.move(5)
+                    golclub3.move(mvspd)
                 if round >= 4:
                     #if golclub4.rect.x >= SCREEN_WIDTH/2-150 and golclub4.rect.right <= SCREEN_WIDTH/2+150:
                     screen.blit(golclub4.image, (golclub4.rect.x,golclub4.rect.y))
-                    golclub4.move(-5)
+                    golclub4.move(-mvspd)
                 if utheart.rect.colliderect(golclub.rect) or utheart.rect.colliderect(golclub2.rect) or utheart.rect.colliderect(golclub3.rect) or utheart.rect.colliderect(golclub4.rect):
                     sound_effects_channel.stop()
                     sound_effects_channel.play(vine_boom_sound)

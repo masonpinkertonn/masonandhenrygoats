@@ -53,7 +53,7 @@ class PSHOOTER(pygame.sprite.Sprite):
 
 def load_image(filename, scale=None):
     if filename not in image_cache:
-        print(f"Loading image: {filename}")
+        #print(f"Loading image: {filename}")
         image = pygame.image.load(filename)
         if scale:
             image = pygame.transform.scale(image, scale)
@@ -168,7 +168,7 @@ class CameraGroup(pygame.sprite.Group):
         self.offset.x = self.camera_rect.left - self.camera_borders['left']
         self.offset.y = self.camera_rect.top - self.camera_borders['top']
 
-    def custom_draw(self, player, mypeeps, e_button):
+    def custom_draw(self, player, mypeeps, e_button, myenemies=None):
         # Update camera offset based on player position
 
         expansion = player.rect.inflate(50,50)
@@ -176,7 +176,7 @@ class CameraGroup(pygame.sprite.Group):
         self.box_target_camera(player)
 
         # Clear the screen
-        self.display_surface.fill((0, 0, 0))
+        self.display_surface.fill((71,171,169,255))
 
         # Draw TMX layers
         for layer in self.tmx_data.visible_layers:
@@ -186,7 +186,6 @@ class CameraGroup(pygame.sprite.Group):
                         x * self.tmx_data.tilewidth - self.offset.x + self.tilemap_offset_x,
                         y * self.tmx_data.tileheight - self.offset.y + self.tilemap_offset_y
                     )
-                    print(surf)
                     self.display_surface.blit(surf, pos)
 
         # Draw sprites
@@ -214,7 +213,22 @@ class CameraGroup(pygame.sprite.Group):
 
         for i in mypeeps:
             if not(i.isdefeated):
-                if expansion.colliderect(i.rect):
-                    self.display_surface.blit(e_button.image, (i.rect.center[0]-e_button.rect.w/2-self.offset[0],i.rect.center[1]-150-self.offset[1]))
-                if player.rect.colliderect(i.rect):
-                    player.docollisions(i.rect)
+                myquest = []
+                z = myenemies.index(i)
+                if isinstance(myenemies[z], Bird):
+                    print(z)
+                #print(z)
+                for y in range(z):
+                    if myenemies[y].isdefeated:
+                        print(myenemies[z])
+                        myquest.append(True)
+                    else:
+                        myquest.append(False)
+                if False in myquest:
+                    if player.rect.colliderect(i.rect):
+                        player.docollisions(i.rect)
+                else:
+                    if expansion.colliderect(i.rect):
+                        self.display_surface.blit(e_button.image, (i.rect.center[0]-e_button.rect.w/2-self.offset[0],i.rect.center[1]-150-self.offset[1]))
+                    if player.rect.colliderect(i.rect):
+                        player.docollisions(i.rect)
