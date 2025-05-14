@@ -212,7 +212,7 @@ class CameraGroup(pygame.sprite.Group):
                 self.display_surface.blit(sprite.image, offset_pos)
 
         for i in mypeeps:
-            if not(i.isdefeated):
+            if not(i.isdefeated) and not(isinstance(i, sanbutton)):
                 myquest = []
                 z = myenemies.index(i)
                 if isinstance(myenemies[z], Bird):
@@ -232,3 +232,8 @@ class CameraGroup(pygame.sprite.Group):
                         self.display_surface.blit(e_button.image, (i.rect.center[0]-e_button.rect.w/2-self.offset[0],i.rect.center[1]-150-self.offset[1]))
                     if player.rect.colliderect(i.rect):
                         player.docollisions(i.rect)
+            if isinstance(i, sanbutton):
+                if expansion.colliderect(i.rect) and player.rect.y >= 800+i.rect.w:
+                    self.display_surface.blit(e_button.image, (i.rect.center[0]-e_button.rect.w/2-self.offset[0],i.rect.center[1]-150-self.offset[1]))
+                if player.rect.colliderect(i.rect):
+                    player.docollisions(i.rect)

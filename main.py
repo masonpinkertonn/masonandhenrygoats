@@ -511,9 +511,12 @@ peaobjs = [testp, testp2, testp3, testp4, testp5]
 npc_list = [golem, birb]
 #pygame.mixer.Sound.play(pygame.mixer.Sound("Balatro - Complete Original Soundtrack (Official).mp3"))
 
-mypeeps = [golem, birb, planto, thiswiz]
+mypeeps = [golem, birb, planto, thiswiz, skibidutton]
 
 myenemies = [golem, birb, planto, thiswiz]
+
+skibidutton.rect.x = 850
+skibidutton.rect.y = 800
 
 while running:
     """if player.rect.x > SCREEN_WIDTH /4 *3:
@@ -580,7 +583,7 @@ while running:
 
         expansion = player.rect.inflate(50,50)
 
-        if expansion.colliderect(skibidutton.rect):
+        if expansion.colliderect(skibidutton.rect) and player.rect.y >= 800+skibidutton.rect.w:
             erect = e_button.image.get_rect()
             screen.blit(e_button.image, (-10000,-100000))
             e_button.isshowingshop=True
