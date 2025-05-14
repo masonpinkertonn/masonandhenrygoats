@@ -1249,7 +1249,7 @@ while running:
             x=utheart.checks(now, newnewlast)
             newnewlast = x
 
-            if player.health == 0:
+            if player.health <= 0:
                 running = False
                 break
 
@@ -1396,7 +1396,7 @@ while running:
                     if utheart.rect.colliderect(testp.rect):
                         sound_effects_channel.play(metal_pipe_sound)
                         player.health -= 2
-                        if player.health == 0:
+                        if player.health <= 0:
                             gamestate = "gameover"
                             last = pygame.time.get_ticks()
                             continue
@@ -1526,7 +1526,7 @@ while running:
                 if utheart.rect.colliderect(mypipe.rect) or utheart.rect.colliderect(myupsidedownpipe.rect):
                     sound_effects_channel.play(metal_pipe_sound)
                     player.health -= 2
-                    if player.health == 0:
+                    if player.health <= 0:
                         gamestate = "gameover"
                         last = pygame.time.get_ticks()
                         continue
@@ -1658,7 +1658,7 @@ while running:
                     sound_effects_channel.stop()
                     sound_effects_channel.play(vine_boom_sound)
                     player.health -= 2
-                    if player.health == 0:
+                    if player.health <= 0:
                         gamestate = "gameover"
                         last = pygame.time.get_ticks()
                         continue
