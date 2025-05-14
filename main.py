@@ -33,12 +33,12 @@ metal_pipe_sound = pygame.mixer.Sound("metalpipe.mp3")
 metal_pipe_sound.set_volume(1.0)  
 compinf = pygame.display.Info()
 
-SCREEN_WIDTH = 1280 #compinf.current_w #1280
-SCREEN_HEIGHT = 720#compinf.current_h #720
+SCREEN_WIDTH =  compinf.current_w #1280
+SCREEN_HEIGHT = compinf.current_h #720
 
 wrapwidth = 2
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))#, pygame.FULLSCREEN)
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
 tmx_data = load_pygame('map/smallmap.tmx')
 
 cameraX = 0
