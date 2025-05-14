@@ -33,12 +33,12 @@ metal_pipe_sound = pygame.mixer.Sound("metalpipe.mp3")
 metal_pipe_sound.set_volume(1.0)  
 compinf = pygame.display.Info()
 
-SCREEN_WIDTH = 1280 #compinf.current_w #1280
-SCREEN_HEIGHT = 720#compinf.current_h #720
+SCREEN_WIDTH = compinf.current_w #1280
+SCREEN_HEIGHT = compinf.current_h #720
 
 wrapwidth = 2
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))#, pygame.FULLSCREEN)
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
 tmx_data = load_pygame('map/smallmap.tmx')
 
 cameraX = 0
@@ -628,7 +628,7 @@ while running:
                 #docollisions(planto.rect)
 
         if not(player.iswizdefeated) and not(thiswiz.isdefeated):
-            w = golemdialogue(wizdialogueline, "planty.npc")
+            w = golemdialogue(wizdialogueline, "wizzy.npc")
 
             wizdialogueline = w[1]
 
@@ -947,6 +947,8 @@ while running:
                 elif gamestats["currentmonster"] == thiswiz:
                     player.iswizdefeated = True
                     thiswiz.isdefeated = True
+                    gamestate = "wingame"
+                    continue
                 tempx = SCREEN_WIDTH/2-275
                 linegoinleft = False
                 linestopped = False
@@ -996,6 +998,8 @@ while running:
                     elif gamestats["currentmonster"] == thiswiz:
                         player.iswizdefeated = True
                         thiswiz.isdefeated = True
+                        gamestate = "wingame"
+                        continue
                     tempx = SCREEN_WIDTH/2-275
                     linegoinleft = False
                     linestopped = False
@@ -1120,6 +1124,8 @@ while running:
                         elif gamestats["currentmonster"] == thiswiz:
                             player.iswizdefeated = True
                             thiswiz.isdefeated = True
+                            gamestate = "wingame"
+                            continue
                         tempx = SCREEN_WIDTH/2-275
                         linegoinleft = False
                         linestopped = False
@@ -1250,8 +1256,9 @@ while running:
             newnewlast = x
 
             if player.health <= 0:
-                running = False
-                break
+                gamestate = "gameover"
+                last = pygame.time.get_ticks()
+                continue
 
             pygame.draw.rect(screen, "white", gamerect1)
 
