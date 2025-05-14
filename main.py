@@ -33,7 +33,7 @@ metal_pipe_sound = pygame.mixer.Sound("metalpipe.mp3")
 metal_pipe_sound.set_volume(1.0)  
 compinf = pygame.display.Info()
 
-SCREEN_WIDTH = compinf.current_w #1280
+SCREEN_WIDTH =  compinf.current_w #1280
 SCREEN_HEIGHT = compinf.current_h #720
 
 wrapwidth = 2
