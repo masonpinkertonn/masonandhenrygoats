@@ -44,12 +44,12 @@ metal_pipe_sound = pygame.mixer.Sound("metalpipe.mp3")
 metal_pipe_sound.set_volume(1.0)  
 compinf = pygame.display.Info()
 
-SCREEN_WIDTH =  1280#compinf.current_w #1280
-SCREEN_HEIGHT = 720#compinf.current_h #720
+SCREEN_WIDTH =  compinf.current_w #1280
+SCREEN_HEIGHT = compinf.current_h #720
 
 wrapwidth = 2
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))#, pygame.FULLSCREEN)
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
 tmx_data = load_pygame('map/smallmap.tmx')
 
 cameraX = 0
@@ -128,13 +128,13 @@ class Player(pygame.sprite.Sprite):
         self.ismoving = False
     def docollisions(self, rct):
         if self.goingleft:
-            self.rect.left = rct.right#-1
-        if self.goingdown:
-            self.rect.bottom = rct.top#+1
-        if self.goingup:
-            self.rect.top = rct.bottom#-1
-        if self.goingright:
-            self.rect.right = rct.left#+1
+            self.rect.left = rct.right#+10
+        elif self.goingdown:
+            self.rect.bottom = rct.top#-10
+        elif self.goingup:
+            self.rect.top = rct.bottom#+10
+        elif self.goingright:
+            self.rect.right = rct.left#-10
     def idleanimation(self):
         self.currentsprite += 0.2
 
@@ -536,6 +536,8 @@ skibidutton.rect.y = 800
 player.rect.x=700
 player.rect.y = 1000
 
+canpress = True
+
 while running:
     """if player.rect.x > SCREEN_WIDTH /4 *3:
         cameraX -= 5
@@ -789,26 +791,31 @@ while running:
                 player.goingdown = False
                 player.goingleft = False
                 player.goingright = False
+                canpress = True
 
         key = pygame.key.get_pressed()
         
-        if key[pygame.K_UP]:
+        if key[pygame.K_UP] and not(player.goingdown) and not(player.goingleft) and not(player.goingright):
             player.goingup = True
             player.rect.y -= 7
+            canpress = False
             player.movement()
-        elif key[pygame.K_DOWN]:
+        elif key[pygame.K_DOWN] and not(player.goingup) and not(player.goingleft) and not(player.goingright):
             player.goingdown = True
             player.rect.y += 7
+            canpress = False
             player.movement()
-        elif key[pygame.K_LEFT]:
+        elif key[pygame.K_LEFT] and not(player.goingdown) and not(player.goingup) and not(player.goingright):
             player.goingleft = True
             player.rect.x -= 7
             player.isleft = True
+            canpress = False
             player.movement()
-        elif key[pygame.K_RIGHT]:
+        elif key[pygame.K_RIGHT] and not(player.goingdown) and not(player.goingleft) and not(player.goingup):
             player.goingright = True
             player.rect.x += 7
             player.isleft = False
+            canpress = False
             player.movement()
         if not(player.ismoving):
             player.idleanimation()

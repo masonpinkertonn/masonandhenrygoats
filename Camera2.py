@@ -256,4 +256,4 @@ class CameraGroup(pygame.sprite.Group):
             if gid == 1:
                 trect = pygame.Rect(x * twidth, y * theight, twidth, theight)
                 if plyrft.colliderect(trect):
-                    return "gameover"
+                    player.docollisions(trect)
