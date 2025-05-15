@@ -216,6 +216,13 @@ class CameraGroup(pygame.sprite.Group):
                 offset_pos = sprite.rect.topleft - self.offset
                 self.display_surface.blit(sprite.image, offset_pos)
 
+        plyrft = pygame.Rect(player.rect.left,player.rect.bottom,player.rect.w,20)
+
+        tx = plyrft.x-self.offset[0]
+        ty=plyrft.y-self.offset[1]
+
+        #pygame.draw.rect(self.display_surface, "red", (tx,ty,plyrft.w,plyrft.h))
+
         for i in mypeeps:
             if not(i.isdefeated) and not(isinstance(i, sanbutton)):
                 myquest = []
@@ -242,3 +249,11 @@ class CameraGroup(pygame.sprite.Group):
                     self.display_surface.blit(e_button.image, (i.rect.center[0]-e_button.rect.w/2-self.offset[0],i.rect.center[1]-150-self.offset[1]))
                 if player.rect.colliderect(i.rect):
                     player.docollisions(i.rect)
+
+        twidth=self.tmx_data.tilewidth
+        theight = self.tmx_data.tileheight
+        for x,y,gid in self.tmx_data.get_layer_by_name('Water'):
+            if gid == 1:
+                trect = pygame.Rect(x * twidth, y * theight, twidth, theight)
+                if plyrft.colliderect(trect):
+                    return "gameover"

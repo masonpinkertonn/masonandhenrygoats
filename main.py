@@ -44,12 +44,12 @@ metal_pipe_sound = pygame.mixer.Sound("metalpipe.mp3")
 metal_pipe_sound.set_volume(1.0)  
 compinf = pygame.display.Info()
 
-SCREEN_WIDTH =  compinf.current_w #1280
-SCREEN_HEIGHT = compinf.current_h #720
+SCREEN_WIDTH =  1280#compinf.current_w #1280
+SCREEN_HEIGHT = 720#compinf.current_h #720
 
 wrapwidth = 2
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))#, pygame.FULLSCREEN)
 tmx_data = load_pygame('map/smallmap.tmx')
 
 cameraX = 0
@@ -536,22 +536,20 @@ skibidutton.rect.y = 800
 player.rect.x=700
 player.rect.y = 1000
 
-plyrft = pygame.Rect()
-
 while running:
     """if player.rect.x > SCREEN_WIDTH /4 *3:
         cameraX -= 5
     elif player.rect.x < SCREEN_WIDTH / 6:
         cameraX += 5"""
     if gamestate == "main":
-        twidth=tmx_data.tilewidth
+        """twidth=tmx_data.tilewidth
         theight = tmx_data.tileheight
         for x,y,gid in tmx_data.get_layer_by_name('Water'):
             if gid == 1:
                 trect = pygame.Rect(x * twidth, y * theight, twidth, theight)
                 if player.rect.colliderect(trect):
                     gamestate="gameover"
-                    continue
+                    continue"""
 
         #print(golem.isdefeated)
         
@@ -581,10 +579,17 @@ while running:
             camera_offset_y += player.rect.centery - CAMERA_THRESHOLD_Y
         # Camera.box_target_camera(Player.rect, SCREEN_WIDTH, SCREEN_HEIGHT)
         sprite_group.draw(screen)
-        camera_group.custom_draw(player, mypeeps, e_button, myenemies)
+        blahg = camera_group.custom_draw(player, mypeeps, e_button, myenemies)
+
+        if blahg == "gameover":
+            gamestate = "gameover"
+            continue
+
        # screen.blit(player.image, (player.rect.x, player.rect.y))
 
         #print(player.rect.y)
+
+        #pygame.draw.rect(screen, "red", plyrft)
 
         thisfont = pygame.font.SysFont("Arial", 30)
         thistxt = "Coins: " + str(gamestats["money"])
