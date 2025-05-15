@@ -3,6 +3,9 @@ from random import randint
 
 image_cache={}
 
+sanddune = pygame.image.load('sandman.png')
+sanddune = pygame.transform.scale(sanddune, (100,75))
+
 class Wizard(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -188,6 +191,8 @@ class CameraGroup(pygame.sprite.Group):
                     )
                     self.display_surface.blit(surf, pos)
 
+                self.display_surface.blit(sanddune, (500,500)-self.offset)
+
         # Draw sprites
         for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery):
             if isinstance(sprite, Golem):  # Check if the sprite is an NPC
@@ -215,12 +220,12 @@ class CameraGroup(pygame.sprite.Group):
             if not(i.isdefeated) and not(isinstance(i, sanbutton)):
                 myquest = []
                 z = myenemies.index(i)
-                if isinstance(myenemies[z], Bird):
-                    print(z)
+                #if isinstance(myenemies[z], Bird):
+                    #print(z)
                 #print(z)
                 for y in range(z):
                     if myenemies[y].isdefeated:
-                        print(myenemies[z])
+                        #print(myenemies[z])
                         myquest.append(True)
                     else:
                         myquest.append(False)
