@@ -20,10 +20,21 @@ music_files = {
 }
 current_music = None
 wrapper = textwrap.TextWrapper(width=30)
+yippie_sound = pygame.mixer.Sound("yippee-tbh.mp3")
+yippie_sound.set_volume(1.0)  # Optional: Adjust the volume
 
 
 cols = ["black", "green", "blue", "yellow", "orange", "pink", "purple"]
-
+def YIPPIE():
+    while True:
+        try:
+            if not sound_effects_channel.get_busy():
+                break
+        except:
+            pass
+        sound_effects_channel.stop()
+        sound_effects_channel.play(yippie_sound)
+        time.sleep(1)
 
 
 sound_effects_channel = pygame.mixer.Channel(1)
@@ -1821,11 +1832,12 @@ while running:
             pygame.mixer.music.load(music_files["gameover"])  # Load the fight music
             pygame.mixer.music.play(-1)  # Play the fight music in a loop
             current_music = "gameover"
+            YIPPIE()
         screen.fill("black")
 
         screen.fill((0,0,0))
         pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-400,SCREEN_HEIGHT/2-200,800,400))
-        screen.blit(wingame, (SCREEN_WIDTH/2,SCREEN_HEIGHT/2))
+        screen.blit(wingame, (0,0))
 
         if now-last >= 15000:
             running = False
