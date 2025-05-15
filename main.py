@@ -490,7 +490,7 @@ class Pea:
         self.rect.y = SCREEN_HEIGHT/2+150-shootarect.h
         self.movex = True
         self.movey = True
-    def checks(self):
+    def checks(self, round):
         if self.rect.right >= SCREEN_WIDTH/2+150:
             self.reset()
         if self.rect.x <= SCREEN_WIDTH/2-150:
@@ -500,19 +500,23 @@ class Pea:
         if isinstance(self.movex, bool) and isinstance(self.movey, bool):
             distance = (utheart.rect.centerx-self.rect.centerx, abs(utheart.rect.centery-self.rect.centery))#pygame.Vector2(utheart.rect.center).distance_to(pygame.Vector2(self.rect.center))
             #print(distance)
-            self.movey = distance[1]/30
-            self.movex = distance[0]/30
+            if round*2.5 > 0:
+                self.movey = distance[1]/(30-(round*2.5))
+                self.movex = distance[0]/(30-(round*2.5))
+            else:
+                self.movey = distance[1]
+                self.movex = distance[0]
 
 
 testp = Pea()
-testp2 = Pea()
+"""testp2 = Pea()
 testp3 = Pea()
 testp4 = Pea()
-testp5 = Pea()
+testp5 = Pea()"""
 
 incval = 3
 
-peaobjs = [testp, testp2, testp3, testp4, testp5]
+peaobjs = [testp]
 
 # Create NPCs
 #sansbutt = NPC(sansbutt_image, SCREEN_WIDTH - 235, SCREEN_HEIGHT // 2 - 150)
@@ -522,9 +526,17 @@ peaobjs = [testp, testp2, testp3, testp4, testp5]
 npc_list = [golem, birb]
 #pygame.mixer.Sound.play(pygame.mixer.Sound("Balatro - Complete Original Soundtrack (Official).mp3"))
 
-mypeeps = [golem, birb, planto, thiswiz]
+mypeeps = [golem, birb, planto, thiswiz, skibidutton]
 
 myenemies = [golem, birb, planto, thiswiz]
+
+skibidutton.rect.x = 850
+skibidutton.rect.y = 800
+
+player.rect.x=700
+player.rect.y = 1000
+
+plyrft = pygame.Rect()
 
 while running:
     """if player.rect.x > SCREEN_WIDTH /4 *3:
@@ -532,6 +544,14 @@ while running:
     elif player.rect.x < SCREEN_WIDTH / 6:
         cameraX += 5"""
     if gamestate == "main":
+        twidth=tmx_data.tilewidth
+        theight = tmx_data.tileheight
+        for x,y,gid in tmx_data.get_layer_by_name('Water'):
+            if gid == 1:
+                trect = pygame.Rect(x * twidth, y * theight, twidth, theight)
+                if player.rect.colliderect(trect):
+                    gamestate="gameover"
+                    continue
 
         #print(golem.isdefeated)
         
@@ -591,7 +611,7 @@ while running:
 
         expansion = player.rect.inflate(50,50)
 
-        if expansion.colliderect(skibidutton.rect):
+        if expansion.colliderect(skibidutton.rect) and player.rect.y >= 800+skibidutton.rect.w:
             erect = e_button.image.get_rect()
             screen.blit(e_button.image, (-10000,-100000))
             e_button.isshowingshop=True
@@ -1267,10 +1287,10 @@ while running:
             x=utheart.checks(now, newnewlast)
             newnewlast = x
 
-            if player.health <= 0:
+            """if player.health <= 0:
                 gamestate = "gameover"
                 last = pygame.time.get_ticks()
-                continue
+                continue"""
 
             pygame.draw.rect(screen, "white", gamerect1)
 
@@ -1411,15 +1431,15 @@ while running:
                     screen.blit(testp.image, (testp.rect.x,testp.rect.y))
 
                     testp.move()
-                    testp.checks()
+                    testp.checks(round)
                     if utheart.rect.colliderect(testp.rect):
                         sound_effects_channel.stop()
                         sound_effects_channel.play(metal_pipe_sound)
                         player.health -= 2
-                        if player.health <= 0:
+                        """if player.health <= 0:
                             gamestate = "gameover"
                             last = pygame.time.get_ticks()
-                            continue
+                            continue"""
                         for testp in peaobjs:
                             testp.reset()
                         """
@@ -1470,13 +1490,15 @@ while running:
         elif gamestats["currentmonster"] == birb:
             screen.fill("black")
 
-            while mypipe.rect.h + myupsidedownpipe.rect.h > 250 or mypipe.rect.h + myupsidedownpipe.rect.h < 225:
+            while mypipe.rect.h + myupsidedownpipe.rect.h > 250-(round-1)*10 or mypipe.rect.h + myupsidedownpipe.rect.h < 225-(round-1)*10:
                 myupsidedownpipe.image = pygame.image.load('pipe.png')
                 myupsidedownpipe.image = pygame.transform.rotate(myupsidedownpipe.image, 180)
                 myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(1,250)))
                 myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
                 myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
                 myupsidedownpipe.rect.left = leftmostbox-200
+
+            #print(mypipe.rect.h+myupsidedownpipe.rect.h)
 
             birb.idleanimation()
 
@@ -1547,10 +1569,10 @@ while running:
                     sound_effects_channel.stop()
                     sound_effects_channel.play(metal_pipe_sound)
                     player.health -= 2
-                    if player.health <= 0:
+                    """if player.health <= 0:
                         gamestate = "gameover"
                         last = pygame.time.get_ticks()
-                        continue
+                        continue"""
                     mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
                     mypipe.rect = mypipe.image.get_rect()
                     mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
@@ -1679,10 +1701,10 @@ while running:
                     sound_effects_channel.stop()
                     sound_effects_channel.play(vine_boom_sound)
                     player.health -= 2
-                    if player.health <= 0:
+                    """if player.health <= 0:
                         gamestate = "gameover"
                         last = pygame.time.get_ticks()
-                        continue
+                        continue"""
                     golclub.rect.left = leftmostbox-200
                     golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
                     golclub2.rect.right = rightmostbox+200

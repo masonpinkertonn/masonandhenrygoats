@@ -3,6 +3,9 @@ from random import randint
 
 image_cache={}
 
+sanddune = pygame.image.load('sandman.png')
+sanddune = pygame.transform.scale(sanddune, (100,75))
+
 class Wizard(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -188,6 +191,8 @@ class CameraGroup(pygame.sprite.Group):
                     )
                     self.display_surface.blit(surf, pos)
 
+                self.display_surface.blit(sanddune, (500,500)-self.offset)
+
         # Draw sprites
         for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery):
             if isinstance(sprite, Golem):  # Check if the sprite is an NPC
@@ -212,15 +217,15 @@ class CameraGroup(pygame.sprite.Group):
                 self.display_surface.blit(sprite.image, offset_pos)
 
         for i in mypeeps:
-            if not(i.isdefeated):
+            if not(i.isdefeated) and not(isinstance(i, sanbutton)):
                 myquest = []
                 z = myenemies.index(i)
-                if isinstance(myenemies[z], Bird):
-                    print(z)
+                #if isinstance(myenemies[z], Bird):
+                    #print(z)
                 #print(z)
                 for y in range(z):
                     if myenemies[y].isdefeated:
-                        print(myenemies[z])
+                        #print(myenemies[z])
                         myquest.append(True)
                     else:
                         myquest.append(False)
@@ -232,3 +237,8 @@ class CameraGroup(pygame.sprite.Group):
                         self.display_surface.blit(e_button.image, (i.rect.center[0]-e_button.rect.w/2-self.offset[0],i.rect.center[1]-150-self.offset[1]))
                     if player.rect.colliderect(i.rect):
                         player.docollisions(i.rect)
+            if isinstance(i, sanbutton):
+                if expansion.colliderect(i.rect) and player.rect.y >= 800+i.rect.w:
+                    self.display_surface.blit(e_button.image, (i.rect.center[0]-e_button.rect.w/2-self.offset[0],i.rect.center[1]-150-self.offset[1]))
+                if player.rect.colliderect(i.rect):
+                    player.docollisions(i.rect)
