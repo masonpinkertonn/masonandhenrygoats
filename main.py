@@ -536,7 +536,7 @@ skibidutton.rect.y = 800
 player.rect.x=700
 player.rect.y = 1000
 
-plyrft = pygame.Rect()
+# plyrft = pygame.Rect()
 
 while running:
     """if player.rect.x > SCREEN_WIDTH /4 *3:
@@ -1077,7 +1077,7 @@ while running:
 
         matchcol = "white"
 
-        if round >= 0:
+        if round >= 3:
             matchcol = "yellow"
 
         myman = 0
