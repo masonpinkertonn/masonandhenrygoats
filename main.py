@@ -34,7 +34,7 @@ def YIPPIE():
             pass
         sound_effects_channel.stop()
         sound_effects_channel.play(yippie_sound)
-        time.sleep(1)
+        time.sleep(20)
 
 
 sound_effects_channel = pygame.mixer.Channel(1)
@@ -1082,7 +1082,7 @@ while running:
 
         matchcol = "white"
 
-        if round >= 0:
+        if round >= 3:
             matchcol = "yellow"
 
         myman = 0
