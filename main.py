@@ -11,12 +11,22 @@ pygame.init()
 pygame.font.init()
 pygame.mixer.init()
 image_cache={}
-inshop = {"Pie": ["Pie",5,1], "Cake":["Cake",10,2], "Super Health Potion":["Super Health Potion",15,3]}
+class dmgpotion:
+    def __init__(self):
+        self.atkplus = 1
+        self.cost = 9
+        self.name = "Damage Potion"
+    def add(self):
+        player.atk += self.atkplus
+
+mypot = dmgpotion()
+inshop = {"Pie": ["Pie",5,3], "Cake":["Cake",10,5], "Super Health Potion":["Super Health Potion",15,7], "Damage Potion":[mypot,mypot.atkplus,mypot.cost,mypot.name]}
 # Preload music for each gamestate
 music_files = {
     "main": "Balatro - Complete Original Soundtrack (Official).mp3",
     "fight": "Doom Eternal OST - The Only Thing They Fear Is You (Mick Gordon) [Doom Eternal Theme].mp3",
     "gameover": "gameover.mp3",
+    "outro": "outro.mp3"
 }
 current_music = None
 wrapper = textwrap.TextWrapper(width=30)
@@ -26,22 +36,25 @@ yippie_sound.set_volume(1.0)  # Optional: Adjust the volume
 
 cols = ["black", "green", "blue", "yellow", "orange", "pink", "purple"]
 def YIPPIE():
-    while True:
-        try:
-            if not sound_effects_channel.get_busy():
-                break
-        except:
-            pass
-        sound_effects_channel.stop()
-        sound_effects_channel.play(yippie_sound)
-        time.sleep(20)
+    """try:
+        if not sound_effects_channel.get_busy():
+            break
+    except:
+        pass"""
+    sound_effects_channel.stop()
+    sound_effects_channel.play(yippie_sound)
+    #time.sleep(20)
 
 
 sound_effects_channel = pygame.mixer.Channel(1)
 vine_boom_sound = pygame.mixer.Sound("vine-boom.mp3")
 vine_boom_sound.set_volume(1.0)  
 metal_pipe_sound = pygame.mixer.Sound("metalpipe.mp3")
-metal_pipe_sound.set_volume(1.0)  
+metal_pipe_sound.set_volume(1.0)
+bruh_sound = pygame.mixer.Sound("bruh.mp3")
+bruh_sound.set_volume(1.0)
+shot_sound = pygame.mixer.Sound("shotty.mp3")
+shot_sound.set_volume(1.0)
 compinf = pygame.display.Info()
 
 SCREEN_WIDTH =  compinf.current_w #1280
@@ -99,6 +112,7 @@ class Player(pygame.sprite.Sprite):
         self.goingleft = False
         self.goingright = False
         self.sprites = []
+        self.atk = 1
         names = []
         for i in range(10):
             names.append('Wraith_01_Idle_00'+str(i)+'.png')
@@ -128,13 +142,13 @@ class Player(pygame.sprite.Sprite):
         self.ismoving = False
     def docollisions(self, rct):
         if self.goingleft:
-            self.rect.left = rct.right#+10
+            self.rect.left = rct.right+25
         elif self.goingdown:
-            self.rect.bottom = rct.top#-10
+            self.rect.bottom = rct.top-25
         elif self.goingup:
-            self.rect.top = rct.bottom#+10
+            self.rect.top = rct.bottom+25
         elif self.goingright:
-            self.rect.right = rct.left#-10
+            self.rect.right = rct.left-25
     def idleanimation(self):
         self.currentsprite += 0.2
 
@@ -259,7 +273,7 @@ class UPSIDEDOWNPIPE:
     def __init__(self):
         self.image = pygame.image.load('pipe.png')
         self.image = pygame.transform.scale(self.image, (40,random.randint(20,250)))
-        self.image = pygame.transform.rotate(self.image, 180)
+        #self.image = pygame.transform.rotate(self.image, 180)
         self.rect = self.image.get_rect()
         self.rect.top = SCREEN_HEIGHT/2-150
     def move(self, vel):
@@ -274,6 +288,18 @@ class PIPE3:
         self.rect.x -= vel
 leftmostbox = SCREEN_WIDTH/2-150
 rightmostbox = SCREEN_WIDTH/2+150
+
+def regulate_height():
+    while mypipe.rect.h + myupsidedownpipe.rect.h > (250-(round-1)*10) or mypipe.rect.h + myupsidedownpipe.rect.h < (225-(round-1)*10):
+        myupsidedownpipe.image = pygame.image.load('pipe.png')
+        myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(20,250)))
+        myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
+        myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
+        myupsidedownpipe.rect.left = leftmostbox-200
+        mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
+        mypipe.rect = mypipe.image.get_rect()
+        mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
+        mypipe.rect.left = leftmostbox-200
 
 mypipe = PIPE()
 mypipe.rect.left = leftmostbox-200
@@ -337,21 +363,29 @@ class Heart(pygame.sprite.Sprite):
                 self.rect.left = gamerect2.left
                 if now - newnewlast >= 200:
                     player.health -= 2
+                    sound_effects_channel.stop()
+                    sound_effects_channel.play(shot_sound)
                     newnewlast = pygame.time.get_ticks()
             if self.rect.right >= gamerect2.right:
                 self.rect.right = gamerect2.right
                 if now - newnewlast >= 200:
                     player.health -= 2
+                    sound_effects_channel.stop()
+                    sound_effects_channel.play(shot_sound)
                     newnewlast = pygame.time.get_ticks()
             if self.rect.top <= gamerect2.top:
                 self.rect.top = gamerect2.top
                 if now - newnewlast >= 200:
                     player.health -= 2
+                    sound_effects_channel.stop()
+                    sound_effects_channel.play(shot_sound)
                     newnewlast = pygame.time.get_ticks()
             if self.rect.bottom >= gamerect2.bottom:
                 self.rect.bottom = gamerect2.bottom
                 if now - newnewlast >= 200:
                     player.health -= 2
+                    sound_effects_channel.stop()
+                    sound_effects_channel.play(shot_sound)
                     newnewlast = pygame.time.get_ticks()
             return newnewlast
 
@@ -972,11 +1006,11 @@ while running:
                 if tempx >= i.x and tempx <= (i.x + i.width):
                     thiscolor = i.color
             if thiscolor == "red":
-                gamestats["currentmonster"].health -= 1
+                gamestats["currentmonster"].health -= player.atk
             elif thiscolor == "yellow":
-                gamestats["currentmonster"].health -= 2
+                gamestats["currentmonster"].health -= player.atk * 2
             elif thiscolor == "green":
-                gamestats["currentmonster"].health -= 3
+                gamestats["currentmonster"].health -= player.atk * 3
             if gamestats["currentmonster"].health <= 0:
                 gamestate = "main"
                 if gamestats["currentmonster"] == golem:
@@ -992,6 +1026,8 @@ while running:
                     player.iswizdefeated = True
                     thiswiz.isdefeated = True
                     gamestate = "wingame"
+                    otrolast=pygame.time.get_ticks()
+                    last = pygame.time.get_ticks()
                     continue
                 tempx = SCREEN_WIDTH/2-275
                 linegoinleft = False
@@ -1043,6 +1079,8 @@ while running:
                         player.iswizdefeated = True
                         thiswiz.isdefeated = True
                         gamestate = "wingame"
+                        otrolast=pygame.time.get_ticks()
+                        last = pygame.time.get_ticks()
                         continue
                     tempx = SCREEN_WIDTH/2-275
                     linegoinleft = False
@@ -1169,12 +1207,14 @@ while running:
                             player.iswizdefeated = True
                             thiswiz.isdefeated = True
                             gamestate = "wingame"
+                            otrolast=pygame.time.get_ticks()
+                            last = pygame.time.get_ticks()
                             continue
                         tempx = SCREEN_WIDTH/2-275
                         linegoinleft = False
                         linestopped = False
                         gamestats["currentmonster"].health = 15
-                        gamestats["money"] += 5
+                        gamestats["money"] += 2
                         round = 0
                         last = pygame.time.get_ticks()
                         continue
@@ -1229,15 +1269,26 @@ while running:
         mifontes = []
 
         for item in playerinv:
-            thistext = {"text":myfont.render((playerinv.get(item))[0]+" - +" + str((playerinv.get(item))[1]) + " HP", True, (255,255,255)),"rect":0}
-            tsrectt = thistext["text"].get_rect()
-            tsrectt.x = blackx
-            tsrectt.y = blacky+myman
-            thistext["rect"] = tsrectt
-            myrects.append(tsrectt)
-            mifontes.append(thistext)
-            screen.blit(thistext["text"], (thistext["rect"].x, thistext["rect"].y))
-            myman+=tsrectt.h+10
+            if isinstance(playerinv.get(item)[0], dmgpotion):
+                thistext = {"text":myfont.render((playerinv.get(item))[3]+" - +" + str((playerinv.get(item))[1]) + " Damage", True, (255,255,255)),"rect":0}
+                tsrectt = thistext["text"].get_rect()
+                tsrectt.x = blackx
+                tsrectt.y = blacky+myman
+                thistext["rect"] = tsrectt
+                myrects.append(tsrectt)
+                mifontes.append(thistext)
+                screen.blit(thistext["text"], (thistext["rect"].x, thistext["rect"].y))
+                myman+=tsrectt.h+10
+            else:
+                thistext = {"text":myfont.render((playerinv.get(item))[0]+" - +" + str((playerinv.get(item))[1]) + " HP", True, (255,255,255)),"rect":0}
+                tsrectt = thistext["text"].get_rect()
+                tsrectt.x = blackx
+                tsrectt.y = blacky+myman
+                thistext["rect"] = tsrectt
+                myrects.append(tsrectt)
+                mifontes.append(thistext)
+                screen.blit(thistext["text"], (thistext["rect"].x, thistext["rect"].y))
+                myman+=tsrectt.h+10
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -1251,7 +1302,11 @@ while running:
                     if i.collidepoint(mouse):
                         for z in mifontes:
                             if z["rect"].x == i.x and z["rect"].y == i.y:
-                                thishlth = list(playerinv.values())[mifontes.index(z)][1]
+                                if isinstance(list(playerinv.values())[mifontes.index(z)][0], dmgpotion):
+                                    player.atk += list(playerinv.values())[mifontes.index(z)][0].atkplus
+                                else:
+                                    thishlth = list(playerinv.values())[mifontes.index(z)][1]
+                                    player.health += thishlth
                                 playerinv.pop(list(playerinv.keys())[mifontes.index(z)])
                         last = pygame.time.get_ticks()
                         newlast = pygame.time.get_ticks()
@@ -1260,7 +1315,6 @@ while running:
                         #if gamestats["currentmonster"] == planto:
                         #    planto.movey = randint(2+round,round*2+4)
                         round += 1
-                        player.health += thishlth
                         if player.health > 20:
                             player.health =20
                         continue
@@ -1299,10 +1353,10 @@ while running:
             x=utheart.checks(now, newnewlast)
             newnewlast = x
 
-            """if player.health <= 0:
+            if player.health <= 0:
                 gamestate = "gameover"
                 last = pygame.time.get_ticks()
-                continue"""
+                continue
 
             pygame.draw.rect(screen, "white", gamerect1)
 
@@ -1446,12 +1500,12 @@ while running:
                     testp.checks(round)
                     if utheart.rect.colliderect(testp.rect):
                         sound_effects_channel.stop()
-                        sound_effects_channel.play(metal_pipe_sound)
+                        sound_effects_channel.play(bruh_sound)
                         player.health -= 2
-                        """if player.health <= 0:
+                        if player.health <= 0:
                             gamestate = "gameover"
                             last = pygame.time.get_ticks()
-                            continue"""
+                            continue
                         for testp in peaobjs:
                             testp.reset()
                         """
@@ -1502,13 +1556,7 @@ while running:
         elif gamestats["currentmonster"] == birb:
             screen.fill("black")
 
-            while mypipe.rect.h + myupsidedownpipe.rect.h > 250-(round-1)*10 or mypipe.rect.h + myupsidedownpipe.rect.h < 225-(round-1)*10:
-                myupsidedownpipe.image = pygame.image.load('pipe.png')
-                myupsidedownpipe.image = pygame.transform.rotate(myupsidedownpipe.image, 180)
-                myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(1,250)))
-                myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
-                myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
-                myupsidedownpipe.rect.left = leftmostbox-200
+            regulate_height()
 
             #print(mypipe.rect.h+myupsidedownpipe.rect.h)
 
@@ -1541,7 +1589,7 @@ while running:
                 mypipe.rect = mypipe.image.get_rect()
                 mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
                 mypipe.rect.left = leftmostbox-200
-                myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(1,250)))
+                myupsidedownpipe.image = pygame.transform.scale(myupsidedownpipe.image, (40,random.randint(20,250)))
                 myupsidedownpipe.rect = myupsidedownpipe.image.get_rect()
                 myupsidedownpipe.rect.top = SCREEN_HEIGHT/2-150
                 myupsidedownpipe.rect.left = leftmostbox-200
@@ -1561,10 +1609,12 @@ while running:
 
             if now-last >= 1500:
                 if mypipe.rect.x >= SCREEN_WIDTH/2-150 and mypipe.rect.right <= SCREEN_WIDTH/2+150:
-                    screen.blit(mypipe.image, (mypipe.rect.x,mypipe.rect.y))
+                    #screen.blit(mypipe.image, (mypipe.rect.x,mypipe.rect.y))
+                    pygame.draw.rect(screen, "green", mypipe.rect)
                 mypipe.move((round+1)*1.5)
                 if myupsidedownpipe.rect.x >= SCREEN_WIDTH/2-150 and myupsidedownpipe.rect.right <= SCREEN_WIDTH/2+150:
-                    screen.blit(myupsidedownpipe.image, (myupsidedownpipe.rect.x, myupsidedownpipe.rect.y))
+                    #screen.blit(myupsidedownpipe.image, (myupsidedownpipe.rect.x, myupsidedownpipe.rect.y))
+                    pygame.draw.rect(screen, "green", myupsidedownpipe.rect)
                 myupsidedownpipe.move((round+1)*1.5)
                 """
                 if round >= 2:
@@ -1581,10 +1631,10 @@ while running:
                     sound_effects_channel.stop()
                     sound_effects_channel.play(metal_pipe_sound)
                     player.health -= 2
-                    """if player.health <= 0:
+                    if player.health <= 0:
                         gamestate = "gameover"
                         last = pygame.time.get_ticks()
-                        continue"""
+                        continue
                     mypipe.image = pygame.transform.scale(mypipe.image, (40, random.randint(20,250)))
                     mypipe.rect = mypipe.image.get_rect()
                     mypipe.rect.bottom = SCREEN_HEIGHT/2-150+300
@@ -1713,10 +1763,10 @@ while running:
                     sound_effects_channel.stop()
                     sound_effects_channel.play(vine_boom_sound)
                     player.health -= 2
-                    """if player.health <= 0:
+                    if player.health <= 0:
                         gamestate = "gameover"
                         last = pygame.time.get_ticks()
-                        continue"""
+                        continue
                     golclub.rect.left = leftmostbox-200
                     golclub.rect.bottom = random.randint(int(SCREEN_HEIGHT/2-112.5),int(SCREEN_HEIGHT/2+150))
                     golclub2.rect.right = rightmostbox+200
@@ -1800,15 +1850,26 @@ while running:
         mifontes = []
 
         for item in inshop:
-            thistext = {"text":myfont.render((inshop.get(item))[0]+" - " + str((inshop.get(item))[2]) + " Coins - +" + str((inshop.get(item))[1]) + " HP", True, (255,255,255)),"rect":0}
-            tsrectt = thistext["text"].get_rect()
-            tsrectt.x = blackx
-            tsrectt.y = blacky+myman
-            thistext["rect"] = tsrectt
-            myrects.append(tsrectt)
-            mifontes.append(thistext)
-            screen.blit(thistext["text"], (thistext["rect"].x, thistext["rect"].y))
-            myman+=tsrectt.h+10
+            if isinstance(inshop.get(item)[0], dmgpotion):
+                thistext = {"text":myfont.render((inshop.get(item))[3]+" - +" + str((inshop.get(item))[1]) + " Damage - " + str((inshop.get(item))[2]) + " Coins", True, (255,255,255)),"rect":0}
+                tsrectt = thistext["text"].get_rect()
+                tsrectt.x = blackx
+                tsrectt.y = blacky+myman
+                thistext["rect"] = tsrectt
+                myrects.append(tsrectt)
+                mifontes.append(thistext)
+                screen.blit(thistext["text"], (thistext["rect"].x, thistext["rect"].y))
+                myman+=tsrectt.h+10
+            else:
+                thistext = {"text":myfont.render((inshop.get(item))[0]+" - +" + str((inshop.get(item))[1]) + " HP - " + str((inshop.get(item))[2]) + " Coins", True, (255,255,255)),"rect":0}
+                tsrectt = thistext["text"].get_rect()
+                tsrectt.x = blackx
+                tsrectt.y = blacky+myman
+                thistext["rect"] = tsrectt
+                myrects.append(tsrectt)
+                mifontes.append(thistext)
+                screen.blit(thistext["text"], (thistext["rect"].x, thistext["rect"].y))
+                myman+=tsrectt.h+10
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -1860,20 +1921,22 @@ while running:
         clock.tick(60)
         now = pygame.time.get_ticks()
     elif gamestate == "wingame":
-        if current_music != "gameover":
+        if current_music != "outro":
             if pygame.mixer.music.get_busy():  # Check if music is currently playing
                 pygame.mixer.music.fadeout(500)  # Fade out the current music over 500ms
-            pygame.mixer.music.load(music_files["gameover"])  # Load the fight music
+            pygame.mixer.music.load(music_files["outro"])  # Load the fight music
             pygame.mixer.music.play(-1)  # Play the fight music in a loop
-            current_music = "gameover"
+            current_music = "outro"
+        if now-otrolast >= 1500:
             YIPPIE()
+            otrolast=pygame.time.get_ticks()
         screen.fill("black")
 
         screen.fill((0,0,0))
         pygame.draw.rect(screen, "black", (SCREEN_WIDTH/2-400,SCREEN_HEIGHT/2-200,800,400))
         screen.blit(wingame, (0,0))
 
-        if now-last >= 15000:
+        if now-last >= 16000:
             running = False
             break
         
