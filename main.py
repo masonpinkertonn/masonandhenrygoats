@@ -1,3 +1,5 @@
+# Super Awesome Undertale-Inspired Video Game by Mason P. and Henry C.
+
 import pygame
 import random
 import textwrap
